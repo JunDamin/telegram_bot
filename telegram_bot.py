@@ -1,17 +1,16 @@
 import os
 import logging
 from pprint import pprint
-import pytz
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
-from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-
+from features.location import get_current_location
+from features.report_signing import report_signing, reply_sign_in, reply_sign_out
 
 load_dotenv()
 env_path = Path(".") / ".env"
 load_dotenv(dotenv_path=env_path)
-cameroon_tz = pytz.timezone('Africa/Douala')
+
 
 # Enable logging
 logging.basicConfig(
@@ -34,63 +33,6 @@ def start(update, context):
 def help_command(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text("Help!")
-
-
-def get_signing_data(update, context, report_type):
-    """ collect recording data from messages """
-    record = {
-            "type": report_type,
-            "first_name": update.message.from_user.first_name,
-            "last_name": update.message.from_user.last_name,
-            "datetime": update.message.date.astimezone(cameroon_tz),
-            }
-    return record
-
-
-def ask_location(update, context):
-    keyboard = [[KeyboardButton("Share Location", request_location=True), ], ]
-    reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
-    update.message.reply_text('Please Share your location:',
-                              reply_markup=reply_markup)
-
-
-def reply_sign_in(update, context, record):
-    """ reply when signing in """
-    update.message.reply_text(
-        f"good morning, {record['first_name']}\nyou have signed in at {record['datetime']}",
-        reply_markup=ReplyKeyboardRemove(remove_keyboard=True, selective=False)
-        )
-    if update.message.chat.type == "private":
-        ask_location(update, context)
-
-
-def reply_sign_out(update, context, record):
-    """ reply when signing in """
-    update.message.reply_text(
-        f"good evening, {record['first_name']}\nyou have signed out at {record['datetime']}",
-        reply_markup=ReplyKeyboardRemove(remove_keyboard=True, selective=False)
-        )
-    if update.message.chat.type == "private":
-        ask_location(update, context)
-
-
-def report_signing(update, context, report_type, reply_callback):
-    """ get update message data and report """
-    record = get_signing_data(update, context, report_type)
-    reply_callback(update, context, record)
-
-
-def get_current_location(update, context):
-    """ listen location"""
-    record = {
-        "first_name": update.message.from_user.first_name,
-        "last_name": update.message.from_user.last_name,
-        "time": update.message.date.astimezone(cameroon_tz),
-        "location": update.message.location
-    }
-    update.message.reply_text(f"{record['first_name']}'s location is {record['location']}",
-                              reply_markup=ReplyKeyboardRemove(
-                                remove_keyboard=True, selective=False))
 
 
 def echo(update, context):
