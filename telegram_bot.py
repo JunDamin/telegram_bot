@@ -34,44 +34,78 @@ def start(update, context):
 def help_command(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text("Help!")
-    print("test", update.message)
 
 
-def sign_in(update, context):
-    """read sign in and process"""
-    pprint(eval(str(update.message)))
-    update.message.reply_text(f"good morning, {update.message.chat.first_name}")
-
-
-def signing_in(update, context):
+def get_signing_data(update, context, report_type):
+    """ collect recording data from messages """
     record = {
+            "type": report_type,
             "first_name": update.message.from_user.first_name,
             "last_name": update.message.from_user.last_name,
-            "signing_time": update.message.date.astimezone(cameroon_tz),
-        }
-    update.message.reply_text(f"good morning, {record['first_name']} \n\
-    you have signed in at {record['signing_time']}")
+            "datetime": update.message.date.astimezone(cameroon_tz),
+            }
+    return record
+
+
+def ask_location(update, context):
     keyboard = [[KeyboardButton("Share Location", request_location=True), ], ]
     reply_markup = ReplyKeyboardMarkup(keyboard)
-    update.message.reply_text('Please Share your location:', reply_markup=reply_markup)
+    update.message.reply_text('Please Share your location:',
+                              reply_markup=reply_markup)
+
+
+def reply_sign_in(update, context, record):
+    """ reply when signing in """
+    update.message.reply_text(
+        f"good morning, {record['first_name']}\nyou have signed in at {record['datetime']}",
+        reply_markup=ReplyKeyboardRemove(remove_keyboard=True, selective=False)
+        )
+    if update.message.chat.type == "private":
+        ask_location(update, context)
+
+
+def reply_sign_out(update, context, record):
+    """ reply when signing in """
+    update.message.reply_text(
+        f"good evening, {record['first_name']}\nyou have signed out at {record['datetime']}",
+        reply_markup=ReplyKeyboardRemove(remove_keyboard=True, selective=False)
+        )
+    if update.message.chat.type == "private":
+        ask_location(update, context)
+
+
+def report_signing(update, context, report_type, reply_callback):
+    """ get update message data and report """
+    record = get_signing_data(update, context, report_type)
+    reply_callback(update, context, record)
 
 
 def get_current_location(update, context):
-    """ handle location"""
-    user = update.message.from_user
-    user_location = update.message.location
-    print(user_location)
-    update.message.reply_text(f"{user.first_name}'s location is {user_location}", 
-    reply_markup=ReplyKeyboardRemove(remove_keyboard=True, selective=False))
+    """ listen location"""
+    record = {
+        "first_name": update.message.from_user.first_name,
+        "last_name": update.message.from_user.last_name,
+        "time": update.message.date.astimezone(cameroon_tz),
+        "location": update.message.location
+    }
+    update.message.reply_text(f"{record['first_name']}'s location is {record['location']}",
+                              reply_markup=ReplyKeyboardRemove(
+                                  remove_keyboard=True, selective=False))
 
 
 def echo(update, context):
     """Echo the user message."""
 
-    pprint(eval(str(update.message)))
+    pprint(str(update.message))
 
-    if update.message.text.lower() in ["signing in"]:
-        signing_in(update, context)
+    text = update.message.text
+    text = text.lower()
+    text = text.strip()
+
+    if text in ["signing in"]:
+        report_signing(update, context, "signing in", reply_sign_in)
+    elif text in ["signing out"]:
+        report_signing(update, context, "signing out", reply_sign_out)
 
 
 def main():
@@ -87,7 +121,6 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help_command))
-    dp.add_handler(CommandHandler("sign_in", sign_in))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
