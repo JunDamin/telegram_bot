@@ -4,6 +4,7 @@ from pprint import pprint
 import pytz
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
+from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 
@@ -42,18 +43,35 @@ def sign_in(update, context):
     update.message.reply_text(f"good morning, {update.message.chat.first_name}")
 
 
+def signing_in(update, context):
+    record = {
+            "first_name": update.message.from_user.first_name,
+            "last_name": update.message.from_user.last_name,
+            "signing_time": update.message.date.astimezone(cameroon_tz),
+        }
+    update.message.reply_text(f"good morning, {record['first_name']} \n\
+    you have signed in at {record['signing_time']}")
+    keyboard = [[KeyboardButton("Share Location", request_location=True), ], ]
+    reply_markup = ReplyKeyboardMarkup(keyboard)
+    update.message.reply_text('Please Share your location:', reply_markup=reply_markup)
+
+
+def get_current_location(update, context):
+    """ handle location"""
+    user = update.message.from_user
+    user_location = update.message.location
+    print(user_location)
+    update.message.reply_text(f"{user.first_name}'s location is {user_location}", 
+    reply_markup=ReplyKeyboardRemove(remove_keyboard=True, selective=False))
+
+
 def echo(update, context):
     """Echo the user message."""
 
-    if update.message.text == "signing in":
-        pprint(eval(str(update.message)))
-        record = {
-            "first_name": update.message.chat.first_name,
-            "last_name": update.message.chat.last_name,
-            "signing_time": update.message.date.astimezone(cameroon_tz),
-        }
-        update.message.reply_text(f"good morning, {record['first_name']} \n\
-        you have signed in at {record['signing_time']}")
+    pprint(eval(str(update.message)))
+
+    if update.message.text.lower() in ["signing in"]:
+        signing_in(update, context)
 
 
 def main():
@@ -73,6 +91,9 @@ def main():
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+
+    # on location information
+    dp.add_handler(MessageHandler(Filters.location, get_current_location))
 
     # Start the Bot
     updater.start_polling()
