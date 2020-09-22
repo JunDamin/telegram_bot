@@ -49,7 +49,7 @@ def get_signing_data(update, context, report_type):
 
 def ask_location(update, context):
     keyboard = [[KeyboardButton("Share Location", request_location=True), ], ]
-    reply_markup = ReplyKeyboardMarkup(keyboard)
+    reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
     update.message.reply_text('Please Share your location:',
                               reply_markup=reply_markup)
 
@@ -90,7 +90,7 @@ def get_current_location(update, context):
     }
     update.message.reply_text(f"{record['first_name']}'s location is {record['location']}",
                               reply_markup=ReplyKeyboardRemove(
-                                  remove_keyboard=True, selective=False))
+                                remove_keyboard=True, selective=False))
 
 
 def echo(update, context):
