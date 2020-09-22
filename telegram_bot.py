@@ -1,11 +1,10 @@
 import os
 import logging
-from pprint import pprint
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from features.location import get_current_location
-from features.report_signing import report_signing, reply_sign_in, reply_sign_out
+from features.command import start, help_command, echo
 
 load_dotenv()
 env_path = Path(".") / ".env"
@@ -21,33 +20,6 @@ logger = logging
 # Bot setting
 token = os.getenv("TOKEN")
 print(token)
-
-
-# Define a few command handlers. These usually take the two arguments update and
-# context. Error handlers also receive the raised TelegramError object in error.
-def start(update, context):
-    """Send a message when the command /start is issued."""
-    update.message.reply_text("Hi!")
-
-
-def help_command(update, context):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text("Help!")
-
-
-def echo(update, context):
-    """Echo the user message."""
-
-    pprint(str(update.message))
-
-    text = update.message.text
-    text = text.lower()
-    text = text.strip()
-
-    if text in ["signing in"]:
-        report_signing(update, context, "signing in", reply_sign_in)
-    elif text in ["signing out"]:
-        report_signing(update, context, "signing out", reply_sign_out)
 
 
 def main():
