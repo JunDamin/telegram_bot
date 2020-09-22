@@ -15,6 +15,7 @@ def ask_location(update, context):
 def get_current_location(update, context):
     """ listen location"""
     record = {
+        "id": update.message.from_user.id,
         "first_name": update.message.from_user.first_name,
         "last_name": update.message.from_user.last_name,
         "time": update.message.date.astimezone(cameroon_tz),

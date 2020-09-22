@@ -2,9 +2,11 @@ import os
 import logging
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
+from telegram import bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from features.location import get_current_location
-from features.command import start, help_command, echo
+from features.command import start, help_command, send_file, echo
+
 
 load_dotenv()
 env_path = Path(".") / ".env"
@@ -19,7 +21,7 @@ logger = logging
 
 # Bot setting
 token = os.getenv("TOKEN")
-print(token)
+print("telegram bot started")
 
 
 def main():
@@ -35,6 +37,7 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help_command))
+    dp.add_handler(CommandHandler("signbook", send_file))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))

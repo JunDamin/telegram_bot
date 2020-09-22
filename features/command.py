@@ -13,6 +13,12 @@ def help_command(update, context):
     update.message.reply_text("Help!")
 
 
+def send_file(update, context):
+    """ Send a file when comamnd /signbook is issued"""
+    chat_id = update.message.from_user.id
+    update.message.reply_document(document=open('signing.csv', 'rb'))
+
+
 def echo(update, context):
     """Echo the user message."""
 
