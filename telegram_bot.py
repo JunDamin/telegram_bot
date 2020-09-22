@@ -1,13 +1,16 @@
 import os
 import logging
+from pprint import pprint
+import pytz
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
+
 load_dotenv()
 env_path = Path(".") / ".env"
 load_dotenv(dotenv_path=env_path)
-
+cameroon_tz = pytz.timezone('Africa/Douala')
 
 # Enable logging
 logging.basicConfig(
@@ -19,6 +22,7 @@ logger = logging
 token = os.getenv("TOKEN")
 print(token)
 
+
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
@@ -29,11 +33,27 @@ def start(update, context):
 def help_command(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text("Help!")
+    print("test", update.message)
+
+
+def sign_in(update, context):
+    """read sign in and process"""
+    pprint(eval(str(update.message)))
+    update.message.reply_text(f"good morning, {update.message.chat.first_name}")
 
 
 def echo(update, context):
     """Echo the user message."""
-    update.message.reply_text(update.message.text)
+
+    if update.message.text == "signing in":
+        pprint(eval(str(update.message)))
+        record = {
+            "first_name": update.message.chat.first_name,
+            "last_name": update.message.chat.last_name,
+            "signing_time": update.message.date.astimezone(cameroon_tz),
+        }
+        update.message.reply_text(f"good morning, {record['first_name']} \n\
+        you have signed in at {record['signing_time']}")
 
 
 def main():
@@ -49,6 +69,7 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help_command))
+    dp.add_handler(CommandHandler("sign_in", sign_in))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
