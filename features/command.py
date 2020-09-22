@@ -15,7 +15,6 @@ def help_command(update, context):
 
 def send_file(update, context):
     """ Send a file when comamnd /signbook is issued"""
-    chat_id = update.message.from_user.id
     update.message.reply_document(document=open('signing.csv', 'rb'))
 
 

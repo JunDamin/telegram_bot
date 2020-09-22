@@ -45,13 +45,13 @@ def report_signing(update, context, report_type, reply_callback):
     record = get_signing_data(update, context, report_type)
     reply_callback(update, context, record)
     if not os.path.exists("signing.csv"):
-        with open("signing.csv", mode='a') as signing_file:
+        with open("signing.csv", mode='a', encoding="utf-8-sig") as signing_file:
             fieldnames = ["id", "first_name", "last_name", "datetime", "type"]
             writer = csv.DictWriter(signing_file, fieldnames=fieldnames)
             writer.writeheader()
-    with open("signing.csv", mode='a') as signing_file:
+    with open("signing.csv", mode='a', encoding="utf-8-sig") as signing_file:
         fieldnames = ["id", "first_name", "last_name", "datetime", "type"]
         writer = csv.DictWriter(signing_file, fieldnames=fieldnames)
         writer.writerow(record)
         
-    print(str(context))
+    print(record)
