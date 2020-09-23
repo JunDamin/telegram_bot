@@ -5,13 +5,6 @@ from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 cameroon_tz = pytz.timezone('Africa/Douala')
 
 
-def ask_location(update, context):
-    keyboard = [[KeyboardButton("Share Location", request_location=True), ], ]
-    reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
-    update.message.reply_text('Please Share your location:',
-                              reply_markup=reply_markup)
-
-
 def get_current_location(update, context):
     """ listen location"""
     record = {

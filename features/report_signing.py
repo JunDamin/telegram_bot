@@ -1,8 +1,7 @@
 import csv
 import pytz
 import os
-from telegram import ReplyKeyboardRemove
-from features.location import ask_location
+from telegram import ReplyKeyboardRemove, KeyboardButton, ReplyKeyboardMarkup
 
 
 cameroon_tz = pytz.timezone('Africa/Douala')
@@ -26,8 +25,6 @@ def reply_sign_in(update, context, record):
         f"good morning, {record['first_name']}\nyou have signed in at {record['datetime']}",
         reply_markup=ReplyKeyboardRemove(remove_keyboard=True, selective=False)
         )
-    if update.message.chat.type == "private":
-        ask_location(update, context)
 
 
 def reply_sign_out(update, context, record):
@@ -36,8 +33,6 @@ def reply_sign_out(update, context, record):
         f"good evening, {record['first_name']}\nyou have signed out at {record['datetime']}",
         reply_markup=ReplyKeyboardRemove(remove_keyboard=True, selective=False)
         )
-    if update.message.chat.type == "private":
-        ask_location(update, context)
 
 
 def report_signing(update, context, report_type, reply_callback):
@@ -53,5 +48,15 @@ def report_signing(update, context, report_type, reply_callback):
         fieldnames = ["id", "first_name", "last_name", "datetime", "type"]
         writer = csv.DictWriter(signing_file, fieldnames=fieldnames)
         writer.writerow(record)
-        
+    # Send a message for location
+    ask_location(update, context)
     print(record)
+
+
+def ask_location(update, context):
+    bot = context.bot
+    user_id = update.message.from_user.id
+    keyboard = [[KeyboardButton("Share Location", request_location=True), ], ]
+    reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
+    bot.send_message(chat_id=user_id, text='Please Share your location:', reply_markup=reply_markup)
+    
