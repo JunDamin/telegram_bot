@@ -59,4 +59,3 @@ def ask_location(update, context):
     keyboard = [[KeyboardButton("Share Location", request_location=True), ], ]
     reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
     bot.send_message(chat_id=user_id, text='Please Share your location:', reply_markup=reply_markup)
-    

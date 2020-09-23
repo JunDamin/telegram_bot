@@ -1,5 +1,5 @@
 import pytz
-from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import ReplyKeyboardRemove
 
 
 cameroon_tz = pytz.timezone('Africa/Douala')

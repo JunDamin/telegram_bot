@@ -2,7 +2,6 @@ import os
 import logging
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
-from telegram import bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from features.location import get_current_location
 from features.command import start, help_command, send_file, echo
