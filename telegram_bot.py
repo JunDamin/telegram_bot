@@ -3,9 +3,8 @@ import logging
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from features.location import get_current_location
-from features.command import start, help_command, send_file, echo
-
+from features.command import start, help_command, send_file, echo, start_signing
+from features.report_signing import conv_handler
 
 load_dotenv()
 env_path = Path(".") / ".env"
@@ -38,11 +37,12 @@ def main():
     dp.add_handler(CommandHandler("help", help_command))
     dp.add_handler(CommandHandler("signbook", send_file))
 
-    # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    # on signing in command i.e message - echo the message on Telegram
+    dp.add_handler(MessageHandler(Filters.regex("signing in"), start_signing))
 
-    # on location information
-    dp.add_handler(MessageHandler(Filters.location, get_current_location))
+    # on conversation handler
+    signing_in_handler = conv_handler()
+    dp.add_handler(signing_in_handler)
 
     # Start the Bot
     updater.start_polling()

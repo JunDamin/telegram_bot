@@ -2,9 +2,58 @@ import csv
 import pytz
 import os
 from telegram import ReplyKeyboardRemove, KeyboardButton, ReplyKeyboardMarkup
-
+from telegram.ext import ConversationHandler, CommandHandler, MessageHandler, Filters
 
 cameroon_tz = pytz.timezone('Africa/Douala')
+
+WORK_TYPE, LOCATION = range(2)
+
+
+def start(update, context):
+    reply_keyboard = [['Office', 'Home']]
+    update.message.reply_text(
+        text=f'{update.message.from_user.first_name}, are you working at the office or home?',
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+    )
+
+    return WORK_TYPE
+
+
+def work_type(update, context):
+    keyboard = [[KeyboardButton("Share Location", request_location=True), ], ]
+    reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
+    update.message.reply_text('I see! Please send me your location by click the button', reply_markup=reply_markup)
+
+    return LOCATION
+
+
+def location(update, context):
+    user_location = update.message.location
+    update.message.reply_text(f'longitude: {user_location.longitude}\
+     latitude: {user_location.latitude} has been registered.')
+
+    return ConversationHandler.END
+
+
+def cancel(update, context):
+    update.message.reply_text('Bye! I hope we can talk again some day.',
+                              reply_markup=ReplyKeyboardRemove())
+
+    return ConversationHandler.END
+
+
+def conv_handler():
+    return ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex("Start register today"), start)],
+
+        states={
+            WORK_TYPE: [MessageHandler(Filters.regex('^(Office|Home)$'), work_type)],
+
+            LOCATION: [MessageHandler(Filters.photo, location), location],
+        },
+
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
 
 
 def get_signing_data(update, context, report_type):
