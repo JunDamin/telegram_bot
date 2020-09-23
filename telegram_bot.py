@@ -3,7 +3,7 @@ import logging
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from features.command import start, help_command, send_file, echo, start_signing
+from features.command import start, help_command, send_file, start_signing
 from features.report_signing import conv_handler
 
 load_dotenv()
@@ -38,7 +38,7 @@ def main():
     dp.add_handler(CommandHandler("signbook", send_file))
 
     # on signing in command i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.regex("signing in"), start_signing))
+    dp.add_handler(MessageHandler(Filters.regex("(S|s)ign.{0,4} in"), start_signing))
 
     # on conversation handler
     signing_in_handler = conv_handler()
