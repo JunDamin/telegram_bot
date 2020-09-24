@@ -1,6 +1,5 @@
 import csv
 import pytz
-import os
 import re
 from telegram import ReplyKeyboardRemove, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import ConversationHandler, CommandHandler, MessageHandler, Filters
