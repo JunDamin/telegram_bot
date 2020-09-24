@@ -45,7 +45,7 @@ def work_type(update, context):
         reply_markup=reply_markup,
     )
     print("test work_type")
-    return ConversationHandler.END 
+    return ConversationHandler.END
 
 
 def cancel(update, context):
