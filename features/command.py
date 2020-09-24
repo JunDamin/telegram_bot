@@ -1,6 +1,7 @@
 import pytz
-from features.data_management import create_connection, create_attendee_basic
 from telegram import ReplyKeyboardMarkup
+from features.report_signing import write_csv
+from features.data_management import create_connection, create_attendee_basic, select_all_atendee
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -18,6 +19,10 @@ def help_command(update, context):
 
 def send_file(update, context):
     """ Send a file when comamnd /signbook is issued"""
+    conn = create_connection("db.sqlite3")
+    record = select_all_atendee(conn)
+    conn.close()
+    write_csv(record)
     update.message.reply_document(document=open("signing.csv", "rb"))
 
 
