@@ -1,4 +1,5 @@
-from features.report_signing import report_signing, reply_sign_in, reply_sign_out
+import pytz
+from features.data_management import create_connection, create_attendee_basic
 from telegram import ReplyKeyboardMarkup
 
 # Define a few command handlers. These usually take the two arguments update and
@@ -17,28 +18,37 @@ def help_command(update, context):
 
 def send_file(update, context):
     """ Send a file when comamnd /signbook is issued"""
-    update.message.reply_document(document=open('signing.csv', 'rb'))
+    update.message.reply_document(document=open("signing.csv", "rb"))
 
 
-def start_signing(update, context):
+def start_signing_in(update, context):
     bot = context.bot
-    user_id = update.message.from_user.id
-    reply_keyboard = [['Start register today']]
-    bot.send_message(
-        chat_id=user_id,
-        text=f'Good morning, {update.message.from_user.first_name}. Are you want to register today?',
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+    user = update.message.from_user
+    attendee_basic = (
+        user.id,
+        user.first_name,
+        user.last_name,
+        update.message.date.astimezone(pytz.timezone("Africa/Douala")),
+        "signing in",
     )
+    conn = create_connection("db.sqlite3")
+    attendee_id = create_attendee_basic(conn, attendee_basic)
+    conn.close()
+    
+    reply_keyboard = [
+        [
+            f"""Start register today
+    register_id: {attendee_id}"""
+        ]
+    ]
 
-
-def echo(update, context):
-    """Echo the user message."""
-
-    text = update.message.text
-    text = text.lower()
-    text = text.strip()
-
-    if text in ["signing in"]:
-        report_signing(update, context, "signing in", reply_sign_in)
-    elif text in ["signing out"]:
-        report_signing(update, context, "signing out", reply_sign_out)
+    bot.send_message(
+        chat_id=user.id,
+        text=f"""Good morning, {update.message.from_user.first_name}.\n
+        Are you want to register today?\n
+        signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
+        """,
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+    )
+    context.user_data['attendee_id'] = attendee_id
+    print(context.user_data)
