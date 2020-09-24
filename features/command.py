@@ -40,6 +40,11 @@ def start_signing_in(update, context):
     conn = create_connection("db.sqlite3")
     attendee_id = create_attendee_basic(conn, attendee_basic)
     conn.close()
+
+    update.message.reply_text(text=f"""Good morning, {update.message.from_user.first_name}.\n
+    You have been signed in today.\n
+    signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
+    """)
     
     reply_keyboard = [
         [
@@ -58,6 +63,7 @@ def start_signing_in(update, context):
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
     context.user_data['attendee_id'] = attendee_id
+    context.user_data['type'] = "signing in"
     print(context.user_data)
 
 
@@ -74,6 +80,11 @@ def start_signing_out(update, context):
     conn = create_connection("db.sqlite3")
     attendee_id = create_attendee_basic(conn, attendee_basic)
     conn.close()
+
+    update.message.reply_text(text=f"""Good evening, {update.message.from_user.first_name}.\n
+    You have been signed out today.\n
+    signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
+    """)
     
     reply_keyboard = [
         [KeyboardButton(f"""Share location infomation for signing out.\n
@@ -81,7 +92,7 @@ def start_signing_out(update, context):
     ]
     bot.send_message(
         chat_id=user.id,
-        text=f"""Good morning, {update.message.from_user.first_name}.\n
+        text=f"""Good evening, {update.message.from_user.first_name}.\n
         You have been signed out today.
         Would you like to share your location?\n
         signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
@@ -95,21 +106,44 @@ def start_signing_out(update, context):
 
 def location(update, context):
     print(context.user_data)
-    if context.user_data['type'] == "signing out":
-        user_location = update.message.location
-        
-        conn = create_connection("db.sqlite3")
-        location_data = (
-            user_location.longitude,
-            user_location.latitude,
-            context.user_data["attendee_id"],
-        )
-        update_attendee_location(conn, location_data)
-        conn.close()
-        
-        update.message.reply_text(
-            f"longitude: {user_location.longitude}\
-        latitude: {user_location.latitude} has been registered.\
-        Good bye!",
-            reply_markup=ReplyKeyboardRemove(),
-        )
+    context_type = context.user_data.get("type")
+    while context_type:
+        if context_type == "signing out":
+            user_location = update.message.location
+            
+            conn = create_connection("db.sqlite3")
+            location_data = (
+                user_location.longitude,
+                user_location.latitude,
+                context.user_data["attendee_id"],
+            )
+            update_attendee_location(conn, location_data)
+            conn.close()
+            
+            update.message.reply_text(
+                f"longitude: {user_location.longitude}\
+            latitude: {user_location.latitude} has been registered.\
+            Good bye!",
+                reply_markup=ReplyKeyboardRemove(),
+            )
+            context_type = None
+
+        elif context_type == "signing in": 
+            print(context.user_data)
+            user_location = update.message.location
+            conn = create_connection("db.sqlite3")
+            location_data = (
+                user_location.longitude,
+                user_location.latitude,
+                context.user_data["attendee_id"],
+            )
+            update_attendee_location(conn, location_data)
+            conn.close()
+
+            update.message.reply_text(
+                f"longitude: {user_location.longitude}\
+            latitude: {user_location.latitude} has been registered.",
+                reply_markup=ReplyKeyboardRemove(),
+            )
+            context_type = None
+            print(context.user_data)
