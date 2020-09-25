@@ -2,10 +2,27 @@ import os
 import logging
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from features.command import start, help_command, send_file, start_signing_in, start_signing_out, location
-from features.report_signing import conv_handler
+from telegram.ext import (
+    Updater,
+    CommandHandler,
+    MessageHandler,
+    ConversationHandler,
+    Filters,
+)
+from features.callback_function import (
+    start,
+    help_command,
+    send_file,
+    start_signing_in,
+    start_signing_out,
+    location,
+    start_conversation,
+    work_type,
+    cancel,
+    WORK_TYPE,
+)
 from features.data_management import create_connection, create_table
+
 load_dotenv()
 env_path = Path(".") / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -60,9 +77,21 @@ def main():
 
     # on signing in command i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.regex("(S|s)ign.{0,4} in"), start_signing_in))
-    dp.add_handler(MessageHandler(Filters.regex("(S|s)ign.{0,4} out"), start_signing_out))
+    dp.add_handler(
+        MessageHandler(Filters.regex("(S|s)ign.{0,4} out"), start_signing_out)
+    )
     dp.add_handler(MessageHandler(Filters.location, location))
-    signing_in_handler = conv_handler()
+
+    # On conversation
+    signing_in_handler = ConversationHandler(
+        entry_points=[
+            MessageHandler(Filters.regex("Share more infomation"), start_conversation)
+        ],
+        states={
+            WORK_TYPE: [MessageHandler(Filters.regex("^(Office|Home)$"), work_type)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    )
     dp.add_handler(signing_in_handler)
 
     # Start the Bot
