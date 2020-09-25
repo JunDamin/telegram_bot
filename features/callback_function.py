@@ -1,5 +1,4 @@
 import pytz
-import re
 from telegram import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from telegram.error import Unauthorized
 from telegram.ext import ConversationHandler
@@ -8,10 +7,10 @@ from features.data_management import (
     create_attendee_basic,
     select_all_atendee,
     update_attendee_type,
-    update_attendee_location,
     write_csv,
 )
 from features.log import log_info
+from features.function import set_location, set_work_type
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -147,20 +146,17 @@ def start_signing_out(update, context):
 
 @log_info()
 def location(update, context):
-    print(context.user_data)
+    print(update.message)
     context_type = context.user_data.get("type")
     while context_type:
         if context_type == "signing out":
             user_location = update.message.location
 
-            conn = create_connection("db.sqlite3")
-            location_data = (
+            set_location(
+                context.user_data["attendee_id"],
                 user_location.longitude,
                 user_location.latitude,
-                context.user_data["attendee_id"],
             )
-            update_attendee_location(conn, location_data)
-            conn.close()
 
             update.message.reply_text(
                 f"longitude: {user_location.longitude}\
@@ -168,19 +164,17 @@ def location(update, context):
             Good bye!",
                 reply_markup=ReplyKeyboardRemove(),
             )
+
             context_type = None
 
         elif context_type == "signing in":
-            print(context.user_data)
+
             user_location = update.message.location
-            conn = create_connection("db.sqlite3")
-            location_data = (
+            set_location(
+                context.user_data["attendee_id"],
                 user_location.longitude,
                 user_location.latitude,
-                context.user_data["attendee_id"],
             )
-            update_attendee_location(conn, location_data)
-            conn.close()
 
             update.message.reply_text(
                 f"longitude: {user_location.longitude}\
@@ -197,40 +191,33 @@ WORK_TYPE = range(1)
 
 @log_info()
 def start_conversation(update, context):
-    print(context.user_data)
     reply_keyboard = [["Office", "Home"]]
     update.message.reply_text(
         text=f"{update.message.from_user.first_name}, are you working at the office or home?",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
-    raw_text = update.message.text
-    m = re.search("register_id: ([0-9]+)", raw_text)
-    context.user_data["attendee_id"] = m.group(1)
-    print(m.group(1))
+
     return WORK_TYPE
 
 
 @log_info()
 def work_type(update, context):
-    print(context.user_data)
-    conn = create_connection("db.sqlite3")
-    work_type = (update.message.text, context.user_data["attendee_id"])
-    update_attendee_type(conn, work_type)
-    conn.close()
+    """Get Work type"""
+    # save attendee work type data
+    set_work_type(context.user_data["attendee_id"], update.message.text)
 
     keyboard = [
         [
             KeyboardButton("Share Location", request_location=True),
         ],
     ]
-    reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
+
     update.message.reply_text(
         """I see! Please send me your location by click the button on your phone.
         (Desktop app can not send location)
         """,
-        reply_markup=reply_markup,
+        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
     )
-    print("test work_type")
     return ConversationHandler.END
 
 
