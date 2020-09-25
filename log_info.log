@@ -1,0 +1,110 @@
+INFO 2020-09-25 11:02:50,760 test
+INFO 2020-09-25 11:02:54,651 test
+INFO 2020-09-25 11:02:54,651 test
+INFO 2020-09-25 11:02:56,804 test
+INFO 2020-09-25 11:02:56,804 test
+INFO 2020-09-25 11:02:56,804 test
+INFO 2020-09-25 11:02:59,258 test
+INFO 2020-09-25 11:02:59,258 test
+INFO 2020-09-25 11:02:59,258 test
+INFO 2020-09-25 11:02:59,258 test
+ERROR 2020-09-25 11:07:31,762 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:31,762 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:43,561 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:43,561 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:43,561 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:43,561 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:55,153 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:55,153 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:55,153 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:55,153 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:55,153 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:07:55,153 And error has occurred at 
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:09:18,904 And error has occurred at start_signing_in
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:09:18,904 And error has occurred at start_signing_in
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{update.message.from_user.id} has been click {func.__name__}")
+NameError: name 'update' is not defined
+ERROR 2020-09-25 11:13:26,817 And error has occurred at start_signing_in
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{args.update.message.from_user.id} has been click {func.__name__}")
+AttributeError: 'tuple' object has no attribute 'update'
+ERROR 2020-09-25 11:13:26,817 And error has occurred at start_signing_in
+Traceback (most recent call last):
+  File "/Users/jundamin/Downloads/Project_Telegram_Bot/features/log.py", line 43, in wrapper
+    logger.info(f"{args.update.message.from_user.id} has been click {func.__name__}")
+AttributeError: 'tuple' object has no attribute 'update'
+INFO 2020-09-25 11:14:01,598 (<telegram.update.Update object at 0x1044c2cd0>, <telegram.ext.callbackcontext.CallbackContext object at 0x10462d7f0>) has been click start_signing_in
+INFO 2020-09-25 11:14:05,580 (<telegram.update.Update object at 0x1044c2d60>, <telegram.ext.callbackcontext.CallbackContext object at 0x1044c2c10>) has been click start_conversation
+INFO 2020-09-25 11:14:05,580 (<telegram.update.Update object at 0x1044c2d60>, <telegram.ext.callbackcontext.CallbackContext object at 0x1044c2c10>) has been click start_conversation
+INFO 2020-09-25 11:14:07,013 (<telegram.update.Update object at 0x1044c2bb0>, <telegram.ext.callbackcontext.CallbackContext object at 0x1044c27f0>) has been click work_type
+INFO 2020-09-25 11:14:07,013 (<telegram.update.Update object at 0x1044c2bb0>, <telegram.ext.callbackcontext.CallbackContext object at 0x1044c27f0>) has been click work_type
+INFO 2020-09-25 11:14:07,013 (<telegram.update.Update object at 0x1044c2bb0>, <telegram.ext.callbackcontext.CallbackContext object at 0x1044c27f0>) has been click work_type
+INFO 2020-09-25 11:14:09,552 (<telegram.update.Update object at 0x10462db50>, <telegram.ext.callbackcontext.CallbackContext object at 0x1044c2dc0>) has been click location
+INFO 2020-09-25 11:14:09,552 (<telegram.update.Update object at 0x10462db50>, <telegram.ext.callbackcontext.CallbackContext object at 0x1044c2dc0>) has been click location
+INFO 2020-09-25 11:14:09,552 (<telegram.update.Update object at 0x10462db50>, <telegram.ext.callbackcontext.CallbackContext object at 0x1044c2dc0>) has been click location
+INFO 2020-09-25 11:14:09,552 (<telegram.update.Update object at 0x10462db50>, <telegram.ext.callbackcontext.CallbackContext object at 0x1044c2dc0>) has been click location
+INFO 2020-09-25 11:15:14,802 1275889668 has been click start_signing_in
+INFO 2020-09-25 11:15:17,464 1275889668 has been click start_conversation
+INFO 2020-09-25 11:15:17,464 1275889668 has been click start_conversation
+INFO 2020-09-25 11:15:19,481 1275889668 has been click work_type
+INFO 2020-09-25 11:15:19,481 1275889668 has been click work_type
+INFO 2020-09-25 11:15:19,481 1275889668 has been click work_type
+INFO 2020-09-25 11:15:22,132 1275889668 has been click location
+INFO 2020-09-25 11:15:22,132 1275889668 has been click location
+INFO 2020-09-25 11:15:22,132 1275889668 has been click location
+INFO 2020-09-25 11:15:22,132 1275889668 has been click location

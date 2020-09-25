@@ -1,5 +1,4 @@
 import os
-import logging
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
 from telegram.ext import (
@@ -23,19 +22,13 @@ from features.callback_function import (
 )
 from features.data_management import create_connection, create_table
 
+
 load_dotenv()
 env_path = Path(".") / ".env"
 load_dotenv(dotenv_path=env_path)
 
 
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-logger = logging
-
 # DB Setting
-
 database = "db.sqlite3"
 sql_create_attendance_table = """CREATE TABLE IF NOT EXISTS attendance (
     id integer PRIMARY KEY,
@@ -48,7 +41,6 @@ sql_create_attendance_table = """CREATE TABLE IF NOT EXISTS attendance (
     longitude text,
     latitude text
 );"""
-
 conn = create_connection(database)
 if conn is not None:
     # Create Project table
@@ -75,14 +67,14 @@ def main():
     dp.add_handler(CommandHandler("help", help_command))
     dp.add_handler(CommandHandler("signbook", send_file))
 
-    # on signing in command i.e message - echo the message on Telegram
+    # on messages handling i.e message - set callback function for each message keywords
     dp.add_handler(MessageHandler(Filters.regex("(S|s)ign.{0,4} in"), start_signing_in))
     dp.add_handler(
         MessageHandler(Filters.regex("(S|s)ign.{0,4} out"), start_signing_out)
     )
     dp.add_handler(MessageHandler(Filters.location, location))
 
-    # On conversation
+    # On conversations - set a conversation for signing in.
     signing_in_handler = ConversationHandler(
         entry_points=[
             MessageHandler(Filters.regex("Share more infomation"), start_conversation)
