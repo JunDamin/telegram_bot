@@ -49,10 +49,11 @@ def start_signing_in(update, context):
     attendee_id = create_attendee_basic(conn, attendee_basic)
     conn.close()
 
-    update.message.reply_text(text=f"""Good morning, {update.message.from_user.first_name}.\n
-    You have been signed in today.\n
-    signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
-    """)
+    if update.message.chat.type == "group":
+        update.message.reply_text(text=f"""Good morning, {update.message.from_user.first_name}.\n
+        You have been signed in today.\n
+        signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
+        """)
 
     reply_keyboard = [
         [
@@ -72,8 +73,9 @@ def start_signing_in(update, context):
         )
         context.user_data['attendee_id'] = attendee_id
         context.user_data['type'] = "signing in"
-        if update.message.chat
-        update.effective_message.reply_text("I've PM'ed you about asking more infomation!")
+        print(update.message)
+        if update.message.chat.type == "group":
+            update.effective_message.reply_text("I've PM'ed you about asking more infomation!")
     except Unauthorized:
         update.effective_message.reply_text("Please, Contact me in PM(Personal Message) first for completion.")
     print(context.user_data)
@@ -201,7 +203,9 @@ def work_type(update, context):
     ]
     reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
     update.message.reply_text(
-        "I see! Please send me your location by click the button",
+        """I see! Please send me your location by click the button on your phone.
+        (Desktop app can not send location)
+        """,
         reply_markup=reply_markup,
     )
     print("test work_type")

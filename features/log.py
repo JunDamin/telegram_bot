@@ -8,9 +8,13 @@ def _generate_log(path):
     :return: Logger object.
     """
     # Create a logger and set the level.
-    logger = logging.getLogger('LogError')
+    logger = logging.getLogger('Log_info')
+    print("logger count: ", len(logger.handlers))
+    # Check handler exists
+    if len(logger.handlers) > 0:
+        return logger  # Logger already exists
+    
     logger.setLevel(logging.INFO)
-
     # Create file handler, log format and add the format to file handler
     file_handler = logging.FileHandler(path)
 
