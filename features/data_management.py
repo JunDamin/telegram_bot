@@ -1,3 +1,4 @@
+import csv
 import sqlite3
 from sqlite3 import Error
 
@@ -95,3 +96,21 @@ def select_all_atendee(conn):
     rows = cursor.fetchall()
 
     return rows
+
+
+def write_csv(record):
+    with open("signing.csv", mode="w", encoding="utf-8-sig") as signing_file:
+        fieldnames = [
+            "id",
+            "chat_id",
+            "first_name",
+            "last_name",
+            "datetime",
+            "type",
+            "work_type",
+            "longitude",
+            "latitude",
+        ]
+        writer = csv.writer(signing_file)
+        writer.writerow(fieldnames)
+        writer.writerows(record)

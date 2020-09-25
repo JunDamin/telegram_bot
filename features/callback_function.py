@@ -1,11 +1,16 @@
 import pytz
 import re
-import csv
 from telegram import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from telegram.error import Unauthorized
 from telegram.ext import ConversationHandler
-from features.data_management import (create_connection, create_attendee_basic,
-                                      select_all_atendee, update_attendee_type, update_attendee_location)
+from features.data_management import (
+    create_connection,
+    create_attendee_basic,
+    select_all_atendee,
+    update_attendee_type,
+    update_attendee_location,
+    write_csv,
+)
 from features.log import log_info
 
 # Define a few command handlers. These usually take the two arguments update and
@@ -50,10 +55,12 @@ def start_signing_in(update, context):
     conn.close()
 
     if update.message.chat.type == "group":
-        update.message.reply_text(text=f"""Good morning, {update.message.from_user.first_name}.\n
+        update.message.reply_text(
+            text=f"""Good morning, {update.message.from_user.first_name}.\n
         You have been signed in today.\n
         signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
-        """)
+        """
+        )
 
     reply_keyboard = [
         [
@@ -71,13 +78,17 @@ def start_signing_in(update, context):
             """,
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
         )
-        context.user_data['attendee_id'] = attendee_id
-        context.user_data['type'] = "signing in"
+        context.user_data["attendee_id"] = attendee_id
+        context.user_data["type"] = "signing in"
         print(update.message)
         if update.message.chat.type == "group":
-            update.effective_message.reply_text("I've PM'ed you about asking more infomation!")
+            update.effective_message.reply_text(
+                "I've PM'ed you about asking more infomation!"
+            )
     except Unauthorized:
-        update.effective_message.reply_text("Please, Contact me in PM(Personal Message) first for completion.")
+        update.effective_message.reply_text(
+            "Please, Contact me in PM(Personal Message) first for completion."
+        )
     print(context.user_data)
 
 
@@ -96,14 +107,21 @@ def start_signing_out(update, context):
     attendee_id = create_attendee_basic(conn, attendee_basic)
     conn.close()
 
-    update.message.reply_text(text=f"""Good evening, {update.message.from_user.first_name}.\n
+    update.message.reply_text(
+        text=f"""Good evening, {update.message.from_user.first_name}.\n
     You have been signed out today.\n
     signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
-    """)
+    """
+    )
 
     reply_keyboard = [
-        [KeyboardButton(f"""Share location infomation for signing out.\n
-        register_id: {attendee_id}""", request_location=True), ],
+        [
+            KeyboardButton(
+                f"""Share location infomation for signing out.\n
+        register_id: {attendee_id}""",
+                request_location=True,
+            ),
+        ],
     ]
     try:
         bot.send_message(
@@ -115,12 +133,16 @@ def start_signing_out(update, context):
             """,
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
         )
-        context.user_data['attendee_id'] = attendee_id
-        context.user_data['type'] = "signing out"
+        context.user_data["attendee_id"] = attendee_id
+        context.user_data["type"] = "signing out"
         print(context.user_data)
-        update.effective_message.reply_text("I've PM'ed you about asking more infomation!")
+        update.effective_message.reply_text(
+            "I've PM'ed you about asking more infomation!"
+        )
     except Unauthorized:
-        update.effective_message.reply_text("Please, Contact me in PM(Personal Message) first for completion.")
+        update.effective_message.reply_text(
+            "Please, Contact me in PM(Personal Message) first for completion."
+        )
 
 
 @log_info()
@@ -219,21 +241,3 @@ def cancel(update, context):
     )
 
     return ConversationHandler.END
-
-
-def write_csv(record):
-    with open("signing.csv", mode="w", encoding="utf-8-sig") as signing_file:
-        fieldnames = [
-            "id",
-            "chat_id",
-            "first_name",
-            "last_name",
-            "datetime",
-            "type",
-            "work_type",
-            "longitude",
-            "latitude",
-        ]
-        writer = csv.writer(signing_file)
-        writer.writerow(fieldnames)
-        writer.writerows(record)
