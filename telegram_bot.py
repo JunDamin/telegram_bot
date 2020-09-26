@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
 from telegram.ext import (
@@ -64,14 +65,15 @@ def main():
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("edit",  cancel))
+    dp.add_handler(CommandHandler("check", cancel))
     dp.add_handler(CommandHandler("help", help_command))
-    dp.add_handler(CommandHandler("signbook", send_file))
+    dp.add_handler(CommandHandler("logbook", send_file))
 
     # on messages handling i.e message - set callback function for each message keywords
-    dp.add_handler(MessageHandler(Filters.regex("(S|s)ign.{0,4} in"), start_signing_in))
-    dp.add_handler(
-        MessageHandler(Filters.regex("(S|s)ign.{0,4} out"), start_signing_out)
-    )
+    
+    dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), start_signing_in))
+    dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)), start_signing_out))
     dp.add_handler(MessageHandler(Filters.location, location))
 
     # On conversations - set a conversation for signing in.

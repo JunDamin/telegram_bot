@@ -6,7 +6,6 @@ from features.data_management import (
     create_connection,
     create_attendee_basic,
     select_all_atendee,
-    update_attendee_type,
     write_csv,
 )
 from features.log import log_info
@@ -55,26 +54,20 @@ def start_signing_in(update, context):
 
     if update.message.chat.type == "group":
         update.message.reply_text(
-            text=f"""Good morning, {update.message.from_user.first_name}.\n
-        You have been signed in today.\n
+            text=f"""Good morning, {update.message.from_user.first_name}.
+        You have been signed in today.
         signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
         """
         )
 
-    reply_keyboard = [
-        [
-            f"""Share more infomation\n
-    register_id: {attendee_id}"""
-        ]
-    ]
+    reply_keyboard = [["""Share more infomation"""]]
     try:
         bot.send_message(
             chat_id=user.id,
             text=f"""Good morning, {update.message.from_user.first_name}.\n
-            You have been signed in! \n
-            Would you like to share more infomation for signing in?\n
-            signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
-            """,
+You have been signed in with Log No. {attendee_id}
+Would you like to share more infomation for signing in?
+signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}""",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
         )
         context.user_data["attendee_id"] = attendee_id
@@ -108,16 +101,15 @@ def start_signing_out(update, context):
 
     update.message.reply_text(
         text=f"""Good evening, {update.message.from_user.first_name}.\n
-    You have been signed out today.\n
-    signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
+You have been signed out today.
+signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
     """
     )
 
     reply_keyboard = [
         [
             KeyboardButton(
-                f"""Share location infomation for signing out.\n
-        register_id: {attendee_id}""",
+                """Share location infomation for signing out""",
                 request_location=True,
             ),
         ],
@@ -126,9 +118,9 @@ def start_signing_out(update, context):
         bot.send_message(
             chat_id=user.id,
             text=f"""Good evening, {update.message.from_user.first_name}.\n
-            You have been signed out today.
-            Would you like to share your location?\n
-            signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
+You have been signed out with with Log No. {attendee_id}.
+Would you like to share your location?
+signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
             """,
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
         )
@@ -136,11 +128,11 @@ def start_signing_out(update, context):
         context.user_data["type"] = "signing out"
         print(context.user_data)
         update.effective_message.reply_text(
-            "I've PM'ed you about asking more infomation!"
+            "Please check your DM(Direct Message) from me!"
         )
     except Unauthorized:
         update.effective_message.reply_text(
-            "Please, Contact me in PM(Personal Message) first for completion."
+            "Please, DM(Direct Message) me for start"
         )
 
 
@@ -159,8 +151,7 @@ def location(update, context):
             )
 
             update.message.reply_text(
-                f"longitude: {user_location.longitude}\
-            latitude: {user_location.latitude} has been registered.\
+                f"longitude: {user_location.longitude}, latitude: {user_location.latitude} has been logged.\
             Good bye!",
                 reply_markup=ReplyKeyboardRemove(),
             )
@@ -177,8 +168,7 @@ def location(update, context):
             )
 
             update.message.reply_text(
-                f"longitude: {user_location.longitude}\
-            latitude: {user_location.latitude} has been registered.",
+                f"longitude: {user_location.longitude}, latitude: {user_location.latitude} has been logged.",
                 reply_markup=ReplyKeyboardRemove(),
             )
             context_type = None
@@ -213,9 +203,8 @@ def work_type(update, context):
     ]
 
     update.message.reply_text(
-        """I see! Please send me your location by click the button on your phone.
-        (Desktop app can not send location)
-        """,
+        """I see! Please send me your location by click the button on your phone. 
+(Desktop app can not send location)""",
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
     )
     return ConversationHandler.END
