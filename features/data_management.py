@@ -35,31 +35,31 @@ def create_table(conn, create_table_sql):
     return None
 
 
-def create_attendee_basic(conn, attendee):
+def create_log_basic(conn, log):
     """
-    Create a new attendance into attendance table
+    Create a new log into logbook table
     :param conn:
-    :param attendee: Attendance info
-    :return attendee id:
+    :param log: log info
+    :return log id:
     """
 
-    sql = """INSERT INTO attendance(chat_id, first_name, last_name, datetime, type)
+    sql = """INSERT INTO logbook(chat_id, first_name, last_name, datetime, type)
     VALUES(?, ?, ?, ?, ?)"""
 
     cursor = conn.cursor()
-    cursor.execute(sql, attendee)
+    cursor.execute(sql, log)
     conn.commit()
     return cursor.lastrowid
 
 
-def update_attendee_type(conn, work_type):
+def update_log_type(conn, work_type):
     """
     :param conn:
     :param work_type:
-    :return attendee id:
+    :return log id:
     """
 
-    sql = """UPDATE attendance
+    sql = """UPDATE logbook
         SET work_type = ?
         WHERE id = ?"""
 
@@ -69,14 +69,14 @@ def update_attendee_type(conn, work_type):
     return cursor.lastrowid
 
 
-def update_attendee_location(conn, location_data):
+def update_log_location(conn, location_data):
     """
     :param conn:
     :param work_type:
-    :return attendee id:
+    :return log id:
     """
 
-    sql = """UPDATE attendance
+    sql = """UPDATE logbook
         SET longitude = ?,
             latitude = ?
         WHERE id = ?"""
@@ -87,11 +87,11 @@ def update_attendee_location(conn, location_data):
     return cursor.lastrowid
 
 
-def select_all_atendee(conn):
+def select_all_log(conn):
     """
     """
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM attendance")
+    cursor.execute("SELECT * FROM logbook")
 
     rows = cursor.fetchall()
 

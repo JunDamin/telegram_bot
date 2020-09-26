@@ -4,8 +4,8 @@ from telegram.error import Unauthorized
 from telegram.ext import ConversationHandler
 from features.data_management import (
     create_connection,
-    create_attendee_basic,
-    select_all_atendee,
+    create_log_basic,
+    select_all_log,
     write_csv,
 )
 from features.log import log_info
@@ -31,7 +31,7 @@ def help_command(update, context):
 def send_file(update, context):
     """ Send a file when comamnd /signbook is issued"""
     conn = create_connection("db.sqlite3")
-    record = select_all_atendee(conn)
+    record = select_all_log(conn)
     conn.close()
     write_csv(record)
     update.message.reply_document(document=open("signing.csv", "rb"))
@@ -41,7 +41,7 @@ def send_file(update, context):
 def start_signing_in(update, context):
     bot = context.bot
     user = update.message.from_user
-    attendee_basic = (
+    log_basic = (
         user.id,
         user.first_name,
         user.last_name,
@@ -49,7 +49,7 @@ def start_signing_in(update, context):
         "signing in",
     )
     conn = create_connection("db.sqlite3")
-    attendee_id = create_attendee_basic(conn, attendee_basic)
+    log_id = create_log_basic(conn, log_basic)
     conn.close()
 
     if update.message.chat.type == "group":
@@ -65,12 +65,12 @@ def start_signing_in(update, context):
         bot.send_message(
             chat_id=user.id,
             text=f"""Good morning, {update.message.from_user.first_name}.\n
-You have been signed in with Log No. {attendee_id}
+You have been signed in with Log No. {log_id}
 Would you like to share more infomation for signing in?
 signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}""",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
         )
-        context.user_data["attendee_id"] = attendee_id
+        context.user_data["log_id"] = log_id
         context.user_data["type"] = "signing in"
         print(update.message)
         if update.message.chat.type == "group":
@@ -88,7 +88,7 @@ signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}""
 def start_signing_out(update, context):
     bot = context.bot
     user = update.message.from_user
-    attendee_basic = (
+    log_basic = (
         user.id,
         user.first_name,
         user.last_name,
@@ -96,7 +96,7 @@ def start_signing_out(update, context):
         "signing out",
     )
     conn = create_connection("db.sqlite3")
-    attendee_id = create_attendee_basic(conn, attendee_basic)
+    log_id = create_log_basic(conn, log_basic)
     conn.close()
 
     update.message.reply_text(
@@ -118,13 +118,13 @@ signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
         bot.send_message(
             chat_id=user.id,
             text=f"""Good evening, {update.message.from_user.first_name}.\n
-You have been signed out with with Log No. {attendee_id}.
+You have been signed out with with Log No. {log_id}.
 Would you like to share your location?
 signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
             """,
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
         )
-        context.user_data["attendee_id"] = attendee_id
+        context.user_data["log_id"] = log_id
         context.user_data["type"] = "signing out"
         print(context.user_data)
         update.effective_message.reply_text(
@@ -145,7 +145,7 @@ def location(update, context):
             user_location = update.message.location
 
             set_location(
-                context.user_data["attendee_id"],
+                context.user_data["log_id"],
                 user_location.longitude,
                 user_location.latitude,
             )
@@ -162,7 +162,7 @@ def location(update, context):
 
             user_location = update.message.location
             set_location(
-                context.user_data["attendee_id"],
+                context.user_data["log_id"],
                 user_location.longitude,
                 user_location.latitude,
             )
@@ -193,8 +193,8 @@ def start_conversation(update, context):
 @log_info()
 def work_type(update, context):
     """Get Work type"""
-    # save attendee work type data
-    set_work_type(context.user_data["attendee_id"], update.message.text)
+    # save log work type data
+    set_work_type(context.user_data["log_id"], update.message.text)
 
     keyboard = [
         [

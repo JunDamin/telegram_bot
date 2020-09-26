@@ -31,7 +31,7 @@ load_dotenv(dotenv_path=env_path)
 
 # DB Setting
 database = "db.sqlite3"
-sql_create_attendance_table = """CREATE TABLE IF NOT EXISTS attendance (
+sql_create_attendance_table = """CREATE TABLE IF NOT EXISTS logbook (
     id integer PRIMARY KEY,
     chat_id text NOT NULL,
     first_name text NOT NULL,
@@ -40,7 +40,8 @@ sql_create_attendance_table = """CREATE TABLE IF NOT EXISTS attendance (
     type text NOT NULL,
     work_type text,
     longitude text,
-    latitude text
+    latitude text,
+    remarks text
 );"""
 conn = create_connection(database)
 if conn is not None:
@@ -75,7 +76,7 @@ def main():
     dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), start_signing_in))
     dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)), start_signing_out))
     dp.add_handler(MessageHandler(Filters.location, location))
-
+    
     # On conversations - set a conversation for signing in.
     signing_in_handler = ConversationHandler(
         entry_points=[
