@@ -70,12 +70,6 @@ def main():
     dp.add_handler(CommandHandler("check", cancel))
     dp.add_handler(CommandHandler("help", help_command))
     dp.add_handler(CommandHandler("logbook", send_file))
-
-    # on messages handling i.e message - set callback function for each message keywords
-    
-    dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), start_signing_in))
-    dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)), start_signing_out))
-    dp.add_handler(MessageHandler(Filters.location, location))
     
     # On conversations - set a conversation for signing in.
     signing_in_handler = ConversationHandler(
@@ -89,6 +83,13 @@ def main():
     )
     dp.add_handler(signing_in_handler)
 
+    # on messages handling i.e message - set callback function for each message keywords
+    
+    dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), start_signing_in))
+    dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)), start_signing_out))
+    dp.add_handler(MessageHandler(Filters.location, location))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, start))
+    
     # Start the Bot
     updater.start_polling()
 

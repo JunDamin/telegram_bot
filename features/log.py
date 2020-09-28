@@ -13,17 +13,20 @@ def _generate_log(path):
     if len(logger.handlers) > 0:
         return logger  # Logger already exists
     # set logger level
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     # Create file handler, log format and add the format to file handler
+    stream_handler = logging.StreamHandler()
     file_handler = logging.FileHandler(path)
 
     # See https://docs.python.org/3/library/logging.html#logrecord-attributes
     # for log format attributes.
     log_format = '%(levelname)s %(asctime)s %(message)s'
     formatter = logging.Formatter(log_format)
+    stream_handler.setFormatter(formatter)
     file_handler.setFormatter(formatter)
-
+    logger.addHandler(stream_handler)
     logger.addHandler(file_handler)
+
     return logger
 
 
@@ -44,7 +47,7 @@ def log_info(path='log_info.log'):
                 # Otherwise it will be execute successfully.
                 logger = _generate_log(path)
                 user = args[0].message.from_user
-                logger.info(f"{user.id} has been click {func.__name__}")
+                logger.info(f"{user.id} {user.first_name} {user.last_name} has clicked {func.__name__}")
                 return func(*args, **kwargs)
             except Exception as e:
                 logger = _generate_log(path)

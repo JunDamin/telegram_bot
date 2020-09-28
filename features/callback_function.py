@@ -72,7 +72,6 @@ signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}""
         )
         context.user_data["log_id"] = log_id
         context.user_data["type"] = "signing in"
-        print(update.message)
         if update.message.chat.type == "group":
             update.effective_message.reply_text(
                 "I've PM'ed you about asking more infomation!"
@@ -81,7 +80,6 @@ signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}""
         update.effective_message.reply_text(
             "Please, Contact me in PM(Personal Message) first for completion."
         )
-    print(context.user_data)
 
 
 @log_info()
@@ -126,7 +124,6 @@ signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
         )
         context.user_data["log_id"] = log_id
         context.user_data["type"] = "signing out"
-        print(context.user_data)
         update.effective_message.reply_text(
             "Please check your DM(Direct Message) from me!"
         )
@@ -138,7 +135,6 @@ signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
 
 @log_info()
 def location(update, context):
-    print(update.message)
     context_type = context.user_data.get("type")
     while context_type:
         if context_type == "signing out":
@@ -172,7 +168,6 @@ def location(update, context):
                 reply_markup=ReplyKeyboardRemove(),
             )
             context_type = None
-            print(context.user_data)
 
 
 cameroon_tz = pytz.timezone("Africa/Douala")
@@ -203,7 +198,7 @@ def work_type(update, context):
     ]
 
     update.message.reply_text(
-        """I see! Please send me your location by click the button on your phone. 
+        """I see! Please send me your location by click the button on your phone.
 (Desktop app can not send location)""",
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
     )
