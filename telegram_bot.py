@@ -6,7 +6,6 @@ from telegram.ext import (
     Updater,
     CommandHandler,
     MessageHandler,
-    ConversationHandler,
     Filters,
 )
 from features.callback_function import (
@@ -15,11 +14,8 @@ from features.callback_function import (
     send_file,
     start_signing_in,
     start_signing_out,
-    location,
-    start_conversation,
-    work_type,
     cancel,
-    WORK_TYPE,
+    connect_message_status
 )
 from features.data_management import create_connection, create_table
 
@@ -70,26 +66,14 @@ def main():
     dp.add_handler(CommandHandler("check", cancel))
     dp.add_handler(CommandHandler("help", help_command))
     dp.add_handler(CommandHandler("logbook", send_file))
-    
-    # On conversations - set a conversation for signing in.
-    signing_in_handler = ConversationHandler(
-        entry_points=[
-            MessageHandler(Filters.regex("Share more infomation"), start_conversation)
-        ],
-        states={
-            WORK_TYPE: [MessageHandler(Filters.regex("^(Office|Home)$"), work_type)],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-    )
-    dp.add_handler(signing_in_handler)
 
     # on messages handling i.e message - set callback function for each message keywords
-    
+
     dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), start_signing_in))
     dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)), start_signing_out))
-    dp.add_handler(MessageHandler(Filters.location, location))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, start))
-    
+    # dp.add_handler(MessageHandler(Filters.location, location))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command | Filters.location, connect_message_status))
+
     # Start the Bot
     updater.start_polling()
 

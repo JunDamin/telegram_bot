@@ -4,12 +4,11 @@ from telegram.error import Unauthorized
 from telegram.ext import ConversationHandler
 from features.data_management import (
     create_connection,
-    create_log_basic,
     select_all_log,
     write_csv,
 )
 from features.log import log_info
-from features.function import set_location, set_work_type
+from features.function import update_location, update_work_type, set_log_basic
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -19,6 +18,7 @@ from features.function import set_location, set_work_type
 def start(update, context):
     """Send a message when the command /start is issued."""
     update.message.reply_text("Hi!")
+    context.user_data["status"] = "START"
 
 
 @log_info()
@@ -39,6 +39,9 @@ def send_file(update, context):
 
 @log_info()
 def start_signing_in(update, context):
+
+    # set variables
+
     bot = context.bot
     user = update.message.from_user
     log_basic = (
@@ -48,42 +51,44 @@ def start_signing_in(update, context):
         update.message.date.astimezone(pytz.timezone("Africa/Douala")),
         "signing in",
     )
-    conn = create_connection("db.sqlite3")
-    log_id = create_log_basic(conn, log_basic)
-    conn.close()
+    log_id = set_log_basic(log_basic)
+    SIGN_IN_GREETING = f"""Good morning, {user.first_name}.\n
+You have been signed in with Log No. {log_id}"""
+    SIGN_TIME = f"""signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}"""
+    ASK_INFO = """Would you like to share where you work?"""
+    CHECK_DM = """"Please check my DM(Direct Message) to you"""
 
+    # check if the chat is group or not
     if update.message.chat.type == "group":
-        update.message.reply_text(
-            text=f"""Good morning, {update.message.from_user.first_name}.
-        You have been signed in today.
-        signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
-        """
-        )
+        text_message = f"{SIGN_IN_GREETING}\n{CHECK_DM}\n{SIGN_TIME}"
+        update.message.reply_text(text=text_message)
 
-    reply_keyboard = [["""Share more infomation"""]]
+    # set status
+    context.user_data["log_id"] = log_id
+    context.user_data["type"] = "signing in"
+    context.user_data["status"] = "SIGN_IN_WITH_WORKTYPE"
+
+    # send Private message to update
     try:
+        text_message = f"{SIGN_IN_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
+        reply_keyboard = [["Office", "Home"], ]
         bot.send_message(
             chat_id=user.id,
-            text=f"""Good morning, {update.message.from_user.first_name}.\n
-You have been signed in with Log No. {log_id}
-Would you like to share more infomation for signing in?
-signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}""",
+            text=text_message,
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
         )
-        context.user_data["log_id"] = log_id
-        context.user_data["type"] = "signing in"
-        if update.message.chat.type == "group":
-            update.effective_message.reply_text(
-                "I've PM'ed you about asking more infomation!"
-            )
+
     except Unauthorized:
         update.effective_message.reply_text(
-            "Please, Contact me in PM(Personal Message) first for completion."
+            "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
         )
 
 
 @log_info()
 def start_signing_out(update, context):
+
+    # set variables
+
     bot = context.bot
     user = update.message.from_user
     log_basic = (
@@ -93,103 +98,70 @@ def start_signing_out(update, context):
         update.message.date.astimezone(pytz.timezone("Africa/Douala")),
         "signing out",
     )
-    conn = create_connection("db.sqlite3")
-    log_id = create_log_basic(conn, log_basic)
-    conn.close()
+    log_id = set_log_basic(log_basic)
 
-    update.message.reply_text(
-        text=f"""Good evening, {update.message.from_user.first_name}.\n
-You have been signed out today.
-signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
-    """
+    SIGN_OUT_GREETING = (
+        f"""Good evening, {user.first_name}.\nYou have been signed out today."""
     )
+    SIGN_TIME = f"signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}"
+    ASK_INFO = "Please share your location infomation."
+    CHECK_DM = """"Please check my DM(Direct Message) to you"""
+    text_message = f"{SIGN_OUT_GREETING}/n{SIGN_TIME}"
 
-    reply_keyboard = [
-        [
-            KeyboardButton(
-                """Share location infomation for signing out""",
-                request_location=True,
-            ),
-        ],
-    ]
+    if update.message.chat.type == "group":
+        text_message = f"{SIGN_OUT_GREETING}\n{CHECK_DM}\n{SIGN_TIME}"
+        update.message.reply_text(text=text_message)
+
+    # set status
+    context.user_data["log_id"] = log_id
+    context.user_data["type"] = "signing out"
+    context.user_data["status"] = "SIGN_OUT_WITH_LOCATION"
+
     try:
+        text_message = f"{SIGN_OUT_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
+        reply_keyboard = [
+            [
+                KeyboardButton(
+                    """Share location infomation for signing out""",
+                    request_location=True,
+                ),
+            ]
+        ]
         bot.send_message(
             chat_id=user.id,
-            text=f"""Good evening, {update.message.from_user.first_name}.\n
-You have been signed out with with Log No. {log_id}.
-Would you like to share your location?
-signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}
-            """,
+            text=text_message,
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
         )
-        context.user_data["log_id"] = log_id
-        context.user_data["type"] = "signing out"
-        update.effective_message.reply_text(
-            "Please check your DM(Direct Message) from me!"
-        )
+
     except Unauthorized:
         update.effective_message.reply_text(
-            "Please, DM(Direct Message) me for start"
+            "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
         )
 
 
 @log_info()
-def location(update, context):
-    context_type = context.user_data.get("type")
-    while context_type:
-        if context_type == "signing out":
-            user_location = update.message.location
+def set_location(update, context):
+    user_data = context.user_data
+    user_location = update.message.location
 
-            set_location(
-                context.user_data["log_id"],
-                user_location.longitude,
-                user_location.latitude,
-            )
-
-            update.message.reply_text(
-                f"longitude: {user_location.longitude}, latitude: {user_location.latitude} has been logged.\
-            Good bye!",
-                reply_markup=ReplyKeyboardRemove(),
-            )
-
-            context_type = None
-
-        elif context_type == "signing in":
-
-            user_location = update.message.location
-            set_location(
-                context.user_data["log_id"],
-                user_location.longitude,
-                user_location.latitude,
-            )
-
-            update.message.reply_text(
-                f"longitude: {user_location.longitude}, latitude: {user_location.latitude} has been logged.",
-                reply_markup=ReplyKeyboardRemove(),
-            )
-            context_type = None
-
-
-cameroon_tz = pytz.timezone("Africa/Douala")
-WORK_TYPE = range(1)
-
-
-@log_info()
-def start_conversation(update, context):
-    reply_keyboard = [["Office", "Home"]]
-    update.message.reply_text(
-        text=f"{update.message.from_user.first_name}, are you working at the office or home?",
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+    update_location(
+        user_data["log_id"],
+        user_location.longitude,
+        user_location.latitude,
     )
 
-    return WORK_TYPE
+    update.message.reply_text(
+        f"longitude: {user_location.longitude}, latitude: {user_location.latitude} has been logged.\
+    Good bye!",
+        reply_markup=ReplyKeyboardRemove(),
+    )
 
 
 @log_info()
-def work_type(update, context):
+def set_work_type(update, context):
     """Get Work type"""
     # save log work type data
-    set_work_type(context.user_data["log_id"], update.message.text)
+    update_work_type(context.user_data["log_id"], update.message.text)
 
     keyboard = [
         [
@@ -202,7 +174,6 @@ def work_type(update, context):
 (Desktop app can not send location)""",
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
     )
-    return ConversationHandler.END
 
 
 @log_info()
@@ -212,3 +183,20 @@ def cancel(update, context):
     )
 
     return ConversationHandler.END
+
+
+def connect_message_status(update, context):
+    status = context.user_data.get("status")
+    call_back = None
+
+    callback_dict = {
+        "SIGN_IN_WITH_WORKTYPE": (set_work_type, "SIGN_IN_WITH_LOCATION"),
+        "SIGN_IN_WITH_LOCATION": (set_location, None)
+    }
+
+    if callback_dict.get(status):
+        call_back, next_status = callback_dict.get(status)
+
+    if call_back:
+        call_back(update, context)
+        context.user_data["status"] = next_status

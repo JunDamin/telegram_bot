@@ -8,7 +8,7 @@ def _generate_log(path):
     :return: Logger object.
     """
     # Create a logger and set the level.
-    logger = logging.getLogger('Log_info')
+    logger = logging.getLogger("Log_info")
     # Check handler exists
     if len(logger.handlers) > 0:
         return logger  # Logger already exists
@@ -20,7 +20,7 @@ def _generate_log(path):
 
     # See https://docs.python.org/3/library/logging.html#logrecord-attributes
     # for log format attributes.
-    log_format = '%(levelname)s %(asctime)s %(message)s'
+    log_format = "%(levelname)s %(asctime)s %(message)s"
     formatter = logging.Formatter(log_format)
     stream_handler.setFormatter(formatter)
     file_handler.setFormatter(formatter)
@@ -30,7 +30,7 @@ def _generate_log(path):
     return logger
 
 
-def log_info(path='log_info.log'):
+def log_info(path="log_info.log"):
     """
     We create a parent function to take arguments
     :param path:
@@ -38,7 +38,6 @@ def log_info(path='log_info.log'):
     """
 
     def info_log(func):
-
         def wrapper(*args, **kwargs):
 
             try:
@@ -47,11 +46,14 @@ def log_info(path='log_info.log'):
                 # Otherwise it will be execute successfully.
                 logger = _generate_log(path)
                 user = args[0].message.from_user
-                logger.info(f"{user.id} {user.first_name} {user.last_name} has clicked {func.__name__}")
+                user_data = args[1].user_data
+                logger.info(
+                    f"m_status: {user_data.get('status')}, log id: {user_data.get('log_id')}, {user.id} {user.first_name} {user.last_name} run {func.__name__}"
+                )
                 return func(*args, **kwargs)
             except Exception as e:
                 logger = _generate_log(path)
-                error_msg = f'And error has occurred at {func.__name__}'
+                error_msg = f"And error has occurred at {func.__name__}"
                 logger.exception(error_msg)
 
                 return e  # Or whatever message you want.
