@@ -20,6 +20,16 @@ def private_only(func):
     return wrapper
 
 
+def public_only(func):
+    def wrapper(*args, **kwargs):
+        chat_type = args[0].message.chat.type
+        if chat_type == "group":
+            return func(*args, **kwargs)
+        else:
+            args[0].message.reply_text("please send in the group chat")
+    return wrapper
+
+
 def update_location(id, longitude, latitude):
 
     conn = create_connection("db.sqlite3")

@@ -23,7 +23,7 @@ from features.callback_function import (
     ask_log_id_to_remove,
 )
 from features.data_management import create_connection, create_table
-from features.function import private_only
+from features.function import private_only, public_only
 
 load_dotenv()
 env_path = Path(".") / ".env"
@@ -78,13 +78,13 @@ def main():
     dp.add_handler(MessageHandler(Filters.regex("/비고작성"), private_only(ask_log_id_for_remarks)))
     dp.add_handler(
         MessageHandler(
-            Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), start_signing_in
+            Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), public_only(start_signing_in)
         )
     )
     dp.add_handler(
         MessageHandler(
             Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)),
-            start_signing_out,
+            public_only(start_signing_out),
         )
     )
     dp.add_handler(
@@ -92,7 +92,7 @@ def main():
             Filters.regex(
                 re.compile("back from break|back to work|lunch over", re.IGNORECASE)
             ),
-            get_back_to_work,
+            public_only(get_back_to_work),
         )
     )
     # dp.add_handler(MessageHandler(Filters.location, location))
