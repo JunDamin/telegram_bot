@@ -3,7 +3,7 @@ import sqlite3
 from sqlite3 import Error
 
 
-def create_connection(db_file):
+def create_connection(db_file="db.sqlite3"):
     """Create a database connection to a SQLite
     :param db_file: database address
     :return conn: Connection to the database"""
@@ -87,7 +87,7 @@ def update_log_location(conn, location_data):
     return cursor.lastrowid
 
 
-def select_all_log(conn):
+def select_all_logs(conn):
     """
     """
     cursor = conn.cursor()
@@ -96,6 +96,17 @@ def select_all_log(conn):
     rows = cursor.fetchall()
 
     return rows
+
+
+def select_log(conn, id):
+    """
+    """
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM logbook WHERE id=?", (id,))
+
+    row = cursor.fetchall()
+
+    return row
 
 
 def write_csv(record):
@@ -114,3 +125,24 @@ def write_csv(record):
         writer = csv.writer(signing_file)
         writer.writerow(fieldnames)
         writer.writerows(record)
+
+
+def select_logs_by_chat_id(conn, chat_id):
+    """
+    """
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT * FROM logbook WHERE chat_id = {chat_id} ORDER BY id DESC LIMIT 5")
+
+    rows = cursor.fetchall()
+
+    return rows
+
+
+def update_remarks(conn, log_id, content):
+
+    data = (content, log_id)
+    cursor = conn.cursor()
+    cursor.execute("""UPDATE logbook
+        SET remarks = ?
+        WHERE id = ?""", data)
+    conn.commit()

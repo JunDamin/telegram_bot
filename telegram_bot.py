@@ -14,7 +14,8 @@ from features.callback_function import (
     send_file,
     start_signing_in,
     start_signing_out,
-    cancel,
+    check_log,
+    ask_log_id_for_remarks,
     connect_message_status
 )
 from features.data_management import create_connection, create_table
@@ -62,8 +63,8 @@ def main():
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("edit",  cancel))
-    dp.add_handler(CommandHandler("check", cancel))
+    dp.add_handler(CommandHandler("remarks",  ask_log_id_for_remarks))
+    dp.add_handler(CommandHandler("check", check_log))
     dp.add_handler(CommandHandler("help", help_command))
     dp.add_handler(CommandHandler("logbook", send_file))
 

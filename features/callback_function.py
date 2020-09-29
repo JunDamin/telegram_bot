@@ -4,8 +4,11 @@ from telegram.error import Unauthorized
 from telegram.ext import ConversationHandler
 from features.data_management import (
     create_connection,
-    select_all_log,
     write_csv,
+    select_all_logs,
+    select_logs_by_chat_id,
+    select_log,
+    update_remarks,
 )
 from features.log import log_info
 from features.function import update_location, update_work_type, set_log_basic
@@ -30,8 +33,8 @@ def help_command(update, context):
 @log_info()
 def send_file(update, context):
     """ Send a file when comamnd /signbook is issued"""
-    conn = create_connection("db.sqlite3")
-    record = select_all_log(conn)
+    conn = create_connection()
+    record = select_all_logs(conn)
     conn.close()
     write_csv(record)
     update.message.reply_document(document=open("signing.csv", "rb"))
@@ -82,6 +85,8 @@ You have been signed in with Log No. {log_id}"""
         update.effective_message.reply_text(
             "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
         )
+
+    return True
 
 
 @log_info()
@@ -138,6 +143,8 @@ def start_signing_out(update, context):
             "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
         )
 
+    return True
+
 
 @log_info()
 def set_location(update, context):
@@ -155,6 +162,7 @@ def set_location(update, context):
     Good bye!",
         reply_markup=ReplyKeyboardRemove(),
     )
+    return True
 
 
 @log_info()
@@ -174,6 +182,7 @@ def set_work_type(update, context):
 (Desktop app can not send location)""",
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
     )
+    return True
 
 
 @log_info()
@@ -191,12 +200,92 @@ def connect_message_status(update, context):
 
     callback_dict = {
         "SIGN_IN_WITH_WORKTYPE": (set_work_type, "SIGN_IN_WITH_LOCATION"),
-        "SIGN_IN_WITH_LOCATION": (set_location, None)
+        "SIGN_IN_WITH_LOCATION": (set_location, None),
+        "ASK_REMARKS_CONTENT": (ask_content_for_remarks, "SET_REMARKS"),
+        "SET_REMARKS": (set_remarks, None),
     }
 
     if callback_dict.get(status):
         call_back, next_status = callback_dict.get(status)
 
     if call_back:
-        call_back(update, context)
-        context.user_data["status"] = next_status
+        if call_back(update, context):
+            context.user_data["status"] = next_status
+
+
+@log_info()
+def check_log(update, context):
+    user = update.message.from_user
+    conn = create_connection()
+    rows = select_logs_by_chat_id(conn, user.id)
+    conn.close()
+    print(rows)
+    text_message = "You have been logged as below.\nlog id | datetime | category | work type | longitude, latitude | remarks\n"
+    for log_id, _, last_name, first_name, datetime, sign_type, work_type, longitude, latitude, remarks in rows:
+
+        record = f"{log_id} | {datetime} | {sign_type} | {work_type} | {longitude}, {latitude} | {remarks}\n"
+
+        text_message += record
+
+    update.message.reply_text(text_message)
+
+
+@log_info()
+def get_a_log(update, context):
+    log_id = context.user_data.get('log_id')
+    if log_id:
+        conn = create_connection()
+        rows = select_log(conn, log_id)
+        conn.close()
+        print(rows)
+        text_message = "You have been logged as below.\n"
+        for log_id, _, last_name, first_name, datetime, sign_type, work_type, longitude, latitude, remarks in rows:
+
+            record = f"""
+            log id : {log_id}
+            datetime : {datetime}
+            category : {sign_type}
+            work type : {work_type}
+            longitude, latitude : {longitude}, {latitude}
+            remarks :{remarks}\n"""
+
+            text_message += record
+
+        update.message.reply_text(text_message)
+
+    else:
+        update.message.reply_text("please send me a log id first.")
+        context.user_data['status'] = "GET_LOG_ID"
+
+
+@log_info()
+def ask_log_id_for_remarks(update, context):
+    update.message.reply_text("Which log do you want to add remarks?\nPlease send me the log number.")
+    context.user_data['status'] = "ASK_REMARKS_CONTENT"
+
+
+@log_info()
+def ask_content_for_remarks(update, context):
+    text = update.message.text
+    try:
+        int(text)
+        context.user_data['remarks_log_id'] = update.message.text
+        update.message.reply_text("What remarks? do you want to add?")
+        return True
+    except ValueError:
+        update.message.reply_text("Please. Send us numbers only.")
+        return False
+
+
+@log_info()
+def set_remarks(update, context):
+    log_id = context.user_data.get('remarks_log_id')
+    content = update.message.text
+
+    conn = create_connection()
+    update_remarks(conn, log_id, content)
+    conn.close()
+
+    update.message.reply_text("remarks has been updated.")
+    context.user_data['log_id'] = log_id
+    get_a_log(update, context)
