@@ -233,7 +233,7 @@ def check_log(update, context):
     rows = rows[-1::-1]
     conn.close()
 
-    header_message = "You have been logged as below.\n"
+    header_message = "Here is your recent log info.\n"
     text_message = make_text_from_logbook(rows, header_message)
 
     update.message.reply_text(text_message)
@@ -247,29 +247,8 @@ def get_a_log(update, context):
         rows = select_log(conn, log_id)
         conn.close()
         print(rows)
-        text_message = "You have been logged as below.\n"
-        for (
-            log_id,
-            _,
-            first_name,
-            last_name,
-            datetime,
-            category,
-            sub_category,
-            longitude,
-            latitude,
-            remarks,
-        ) in rows:
-
-            record = f"""
-            log id : {log_id}
-            datetime : {datetime}
-            category : {category} - {sub_category}
-            longitude, latitude : {longitude}, {latitude}
-            remarks :{remarks}\n"""
-
-            text_message += record
-
+        header_message = "You have been logged as below.\n"
+        text_message = make_text_from_logbook(rows, header_message)
         update.message.reply_text(text_message)
 
     else:
