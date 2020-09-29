@@ -74,8 +74,8 @@ def make_text_from_logbook(rows, header):
         record = f"""
         {category} {"- " + sub_category if sub_category else ""}
         Log No.{log_id} : {dt.strftime("%H:%M")}
-        location : {longitude if not longitude else "-"}, {latitude if not latitude else "-"}
-        remarks : {remarks if not remarks else "-"}\n"""
+        location : {longitude if longitude else "-"}, {latitude if latitude else "-"}
+        remarks : {remarks if remarks else "-"}\n"""
 
         text_message += record
 
