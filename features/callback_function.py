@@ -11,7 +11,7 @@ from features.data_management import (
     update_remarks,
 )
 from features.log import log_info
-from features.function import update_location, update_work_type, set_log_basic
+from features.function import update_location, update_work_type, set_log_basic, get_logs_of_today
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -203,6 +203,7 @@ def connect_message_status(update, context):
         "SIGN_IN_WITH_LOCATION": (set_location, None),
         "ASK_REMARKS_CONTENT": (ask_content_for_remarks, "SET_REMARKS"),
         "SET_REMARKS": (set_remarks, None),
+        "BACK_TO_WORK": (set_launch_info, None)
     }
 
     if callback_dict.get(status):
@@ -221,7 +222,7 @@ def check_log(update, context):
     conn.close()
     print(rows)
     text_message = "You have been logged as below.\nlog id | datetime | category | work type | longitude, latitude | remarks\n"
-    for log_id, _, last_name, first_name, datetime, sign_type, work_type, longitude, latitude, remarks in rows:
+    for log_id, _,first_name, last_name, datetime, sign_type, work_type, longitude, latitude, remarks in rows:
 
         record = f"{log_id} | {datetime} | {sign_type} | {work_type} | {longitude}, {latitude} | {remarks}\n"
 
@@ -239,7 +240,7 @@ def get_a_log(update, context):
         conn.close()
         print(rows)
         text_message = "You have been logged as below.\n"
-        for log_id, _, last_name, first_name, datetime, sign_type, work_type, longitude, latitude, remarks in rows:
+        for log_id, _, first_name, last_name, datetime, sign_type, work_type, longitude, latitude, remarks in rows:
 
             record = f"""
             log id : {log_id}
@@ -289,3 +290,78 @@ def set_remarks(update, context):
     update.message.reply_text("remarks has been updated.")
     context.user_data['log_id'] = log_id
     get_a_log(update, context)
+
+
+@log_info()
+def get_back_to_work(update, context):
+
+    # set variables
+
+    bot = context.bot
+    user = update.message.from_user
+    log_basic = (
+        user.id,
+        user.first_name,
+        user.last_name,
+        update.message.date.astimezone(pytz.timezone("Africa/Douala")),
+        "back to work",
+    )
+    log_id = set_log_basic(log_basic)
+    SIGN_IN_GREETING = f"""Good afternoon, {user.first_name}.\n
+Welcome back. You have been logged with Log No. {log_id}"""
+    SIGN_TIME = f"""signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}"""
+    ASK_INFO = """Did you have launch with KOICA collagues?"""
+    CHECK_DM = """"Please check my DM(Direct Message) to you"""
+
+    # check if the chat is group or not
+    if update.message.chat.type == "group":
+        text_message = f"{SIGN_IN_GREETING}\n{CHECK_DM}\n{SIGN_TIME}"
+        update.message.reply_text(text=text_message)
+
+    # set status
+    context.user_data["log_id"] = log_id
+    context.user_data["type"] = "back to work"
+    context.user_data["status"] = "BACK_TO_WORK"
+
+    # send Private message to update
+    try:
+        text_message = f"{SIGN_IN_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
+        reply_keyboard = [["Alone", "With Someone"], ]
+        bot.send_message(
+            chat_id=user.id,
+            text=text_message,
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+        )
+
+    except Unauthorized:
+        update.effective_message.reply_text(
+            "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
+        )
+
+    return True
+
+
+@log_info()
+def set_launch_info(update, context):
+    """Get Work type"""
+    # save log work type data
+    update_work_type(context.user_data["log_id"], update.message.text)
+
+    keyboard = [
+        [
+            KeyboardButton("Share Location", request_location=True),
+        ],
+    ]
+
+    update.message.reply_text(
+        """I see! Please send me your location by click the button on your phone.
+(Desktop app can not send location)""",
+        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
+    )
+    return True
+
+
+def get_logs_today(update, context):
+    text_message = get_logs_of_today()
+
+    update.message.reply_text(text_message)

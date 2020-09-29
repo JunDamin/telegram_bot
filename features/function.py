@@ -3,7 +3,9 @@ from features.data_management import (
     update_log_type,
     update_log_location,
     create_log_basic,
+    select_logs_by_date,
 )
+from datetime import datetime, date, timedelta
 
 
 def update_location(id, longitude, latitude):
@@ -32,3 +34,44 @@ def set_log_basic(log_basic):
     log_id = create_log_basic(conn, log_basic)
     conn.close()
     return log_id
+
+
+def select_log(conn, log_id):
+    """
+    """
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM logbook WHERE id=?", (log_id,))
+
+    row = cursor.fetchall()
+
+    return row
+
+
+def get_logs_of_today():
+
+    start_date = date.today()
+    end_date = start_date + timedelta(1)
+
+    conn = create_connection("db.sqlite3")
+    rows = select_logs_by_date(conn, start_date, end_date)
+
+    text_message = "Today's Logging"
+    chat_id = ""
+    for log_id, _, first_name, last_name, _datetime, sign_type, work_type, longitude, latitude, remarks in rows:
+        
+        if chat_id != _:
+            chat_id = _
+            text_message += f"\n\n{first_name} {last_name}'s log as below\n"
+        dt = datetime.fromisoformat(_datetime)
+
+        record = f"""
+        log id : {log_id}
+        datetime : {dt.strftime("%m-%d %H:%M")}
+        category : {sign_type}
+        work type : {work_type}
+        location : {longitude}, {latitude}
+        remarks :{remarks}\n"""
+
+        text_message += record
+
+    return text_message

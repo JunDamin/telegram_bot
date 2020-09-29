@@ -98,17 +98,6 @@ def select_all_logs(conn):
     return rows
 
 
-def select_log(conn, id):
-    """
-    """
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM logbook WHERE id=?", (id,))
-
-    row = cursor.fetchall()
-
-    return row
-
-
 def write_csv(record):
     with open("signing.csv", mode="w", encoding="utf-8-sig") as signing_file:
         fieldnames = [
@@ -121,6 +110,7 @@ def write_csv(record):
             "work_type",
             "longitude",
             "latitude",
+            "remarks",
         ]
         writer = csv.writer(signing_file)
         writer.writerow(fieldnames)
@@ -146,3 +136,23 @@ def update_remarks(conn, log_id, content):
         SET remarks = ?
         WHERE id = ?""", data)
     conn.commit()
+
+
+def select_logs_by_date(conn, start_date, end_date):
+
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT * FROM logbook WHERE strftime('%s', datetime) BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}') ORDER BY first_name;")
+    rows = cursor.fetchall()
+
+    return rows
+
+
+def select_log(conn, log_id):
+    """
+    """
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM logbook WHERE id=?", (log_id,))
+
+    row = cursor.fetchall()
+
+    return row
