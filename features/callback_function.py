@@ -211,6 +211,7 @@ def connect_message_status(update, context):
     callback_dict = {
         "SIGN_IN_WITH_SUB_CATEGORY": (set_sub_category, "SIGN_IN_WITH_LOCATION"),
         "SIGN_IN_WITH_LOCATION": (set_location, None),
+        "SIGN_OUT_WITH_LOCATION": (set_location, None),
         "ASK_REMARKS_CONTENT": (ask_content_for_remarks, "SET_REMARKS"),
         "SET_REMARKS": (set_remarks, None),
         "REMOVE_LOG_ID": (ask_confirmation_of_removal, "CONFIRM_DELETE_LOG"),
