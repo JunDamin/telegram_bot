@@ -9,9 +9,16 @@ from features.data_management import (
     select_logs_by_chat_id,
     select_log,
     update_remarks,
+    delete_log,
 )
 from features.log import log_info
-from features.function import update_location, update_sub_category, set_log_basic, get_logs_of_today
+from features.function import (
+    update_location,
+    update_sub_category,
+    set_log_basic,
+    get_logs_of_today,
+    make_text_from_logbook,
+)
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -74,7 +81,9 @@ You have been signed in with Log No. {log_id}"""
     # send Private message to update
     try:
         text_message = f"{SIGN_IN_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
-        reply_keyboard = [["Office", "Home"], ]
+        reply_keyboard = [
+            ["Office", "Home"],
+        ]
         bot.send_message(
             chat_id=user.id,
             text=text_message,
@@ -203,7 +212,8 @@ def connect_message_status(update, context):
         "SIGN_IN_WITH_LOCATION": (set_location, None),
         "ASK_REMARKS_CONTENT": (ask_content_for_remarks, "SET_REMARKS"),
         "SET_REMARKS": (set_remarks, None),
-        "BACK_TO_WORK": (set_lunch_location, None)
+        "REMOVE_LOG_ID": (ask_confirmation_of_removal, "CONFIRM_DELETE_LOG"),
+        "CONFIRM_DELETE_LOG": (remove_log, None),
     }
 
     if callback_dict.get(status):
@@ -217,30 +227,39 @@ def connect_message_status(update, context):
 @log_info()
 def check_log(update, context):
     user = update.message.from_user
+
     conn = create_connection()
     rows = select_logs_by_chat_id(conn, user.id)
+    rows = rows[-1::-1]
     conn.close()
-    print(rows)
-    text_message = "You have been logged as below.\nlog id | datetime | category | sub-category | longitude, latitude | remarks\n"
-    for log_id, _, first_name, last_name, datetime, category, sub_category, longitude, latitude, remarks in rows:
 
-        record = f"{log_id} | {datetime} | {category} | {sub_category} | {longitude}, {latitude} | {remarks}\n"
-
-        text_message += record
+    header_message = "You have been logged as below.\n"
+    text_message = make_text_from_logbook(rows, header_message)
 
     update.message.reply_text(text_message)
 
 
 @log_info()
 def get_a_log(update, context):
-    log_id = context.user_data.get('log_id')
+    log_id = context.user_data.get("log_id")
     if log_id:
         conn = create_connection()
         rows = select_log(conn, log_id)
         conn.close()
         print(rows)
         text_message = "You have been logged as below.\n"
-        for log_id, _, first_name, last_name, datetime, category, sub_category, longitude, latitude, remarks in rows:
+        for (
+            log_id,
+            _,
+            first_name,
+            last_name,
+            datetime,
+            category,
+            sub_category,
+            longitude,
+            latitude,
+            remarks,
+        ) in rows:
 
             record = f"""
             log id : {log_id}
@@ -255,13 +274,15 @@ def get_a_log(update, context):
 
     else:
         update.message.reply_text("please send me a log id first.")
-        context.user_data['status'] = "GET_LOG_ID"
+        context.user_data["status"] = "GET_LOG_ID"
 
 
 @log_info()
 def ask_log_id_for_remarks(update, context):
-    update.message.reply_text("Which log do you want to add remarks?\nPlease send me the log number.")
-    context.user_data['status'] = "ASK_REMARKS_CONTENT"
+    update.message.reply_text(
+        "Which log do you want to add remarks?\nPlease send me the log number."
+    )
+    context.user_data["status"] = "ASK_REMARKS_CONTENT"
 
 
 @log_info()
@@ -269,7 +290,7 @@ def ask_content_for_remarks(update, context):
     text = update.message.text
     try:
         int(text)
-        context.user_data['remarks_log_id'] = update.message.text
+        context.user_data["remarks_log_id"] = update.message.text
         update.message.reply_text("What remarks? do you want to add?")
         return True
     except ValueError:
@@ -279,7 +300,7 @@ def ask_content_for_remarks(update, context):
 
 @log_info()
 def set_remarks(update, context):
-    log_id = context.user_data.get('remarks_log_id')
+    log_id = context.user_data.get("remarks_log_id")
     content = update.message.text
 
     conn = create_connection()
@@ -287,7 +308,7 @@ def set_remarks(update, context):
     conn.close()
 
     update.message.reply_text("remarks has been updated.")
-    context.user_data['log_id'] = log_id
+    context.user_data["log_id"] = log_id
     get_a_log(update, context)
 
 
@@ -295,7 +316,6 @@ def set_remarks(update, context):
 def get_back_to_work(update, context):
 
     # set variables
-
     bot = context.bot
     user = update.message.from_user
     log_basic = (
@@ -306,6 +326,8 @@ def get_back_to_work(update, context):
         "lunch over",
     )
     log_id = set_log_basic(log_basic)
+
+    # set message texts
     SIGN_IN_GREETING = f"""Good afternoon, {user.first_name}.\n
 Welcome back. You have been logged with Log No. {log_id}"""
     SIGN_TIME = f"""signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}"""
@@ -325,7 +347,9 @@ Welcome back. You have been logged with Log No. {log_id}"""
     # send Private message to update
     try:
         text_message = f"{SIGN_IN_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
-        reply_keyboard = [["Alone", "With Someone"], ]
+        reply_keyboard = [
+            ["Alone", "With Someone"],
+        ]
         bot.send_message(
             chat_id=user.id,
             text=text_message,
@@ -361,6 +385,52 @@ def set_lunch_location(update, context):
 
 
 def get_logs_today(update, context):
+    """ """
     text_message = get_logs_of_today()
-
     update.message.reply_text(text_message)
+
+
+@log_info()
+def ask_log_id_to_remove(update, context):
+    """ """
+    update.message.reply_text(
+        "Which log do you want to remove?\nPlease send me the log number."
+    )
+    context.user_data["status"] = "REMOVE_LOG_ID"
+
+
+@log_info()
+def ask_confirmation_of_removal(update, context):
+    text = update.message.text
+    try:
+        int(text)
+        context.user_data["remove_log_id"] = text
+        keyboard = [["YES", "NO"]]
+        update.message.reply_text(
+            f"Do you really want to do remove log No.{text}?",
+            reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
+        )
+        return True
+    except ValueError:
+        update.message.reply_text("Please. Send me numbers only.")
+        return False
+
+
+@log_info()
+def remove_log(update, context):
+    choices = {"YES": True, "NO": False}
+    answer = choices.get(update.message.text)
+    if answer:
+        log_id = context.user_data.get("remove_log_id")
+
+        conn = create_connection()
+        row = select_log(conn, log_id)
+        delete_log(conn, log_id)
+        
+        header_message = f"Log No. {log_id} has been Deleted\n"
+        text_message = make_text_from_logbook(row, header_message)
+        update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+    else:
+        text_message = "process has been stoped. The log has not been deleted."
+        update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+    return True

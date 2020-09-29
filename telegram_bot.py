@@ -18,7 +18,8 @@ from features.callback_function import (
     ask_log_id_for_remarks,
     connect_message_status,
     get_back_to_work,
-    get_logs_today
+    get_logs_today,
+    ask_log_id_to_remove,
 )
 from features.data_management import create_connection, create_table
 
@@ -64,20 +65,41 @@ def main():
     dp = updater.dispatcher
 
     # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("remarks",  ask_log_id_for_remarks))
     dp.add_handler(CommandHandler("check", check_log))
-    dp.add_handler(CommandHandler("help", help_command))
-    dp.add_handler(CommandHandler("logbook", send_file))
     dp.add_handler(CommandHandler("today", get_logs_today))
+    dp.add_handler(CommandHandler("logbook", send_file))
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help_command))
+    dp.add_handler(CommandHandler("remarks", ask_log_id_for_remarks))
+    dp.add_handler(CommandHandler("remove", ask_log_id_to_remove))
 
     # on messages handling i.e message - set callback function for each message keywords
 
-    dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), start_signing_in))
-    dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)), start_signing_out))
-    dp.add_handler(MessageHandler(Filters.regex(re.compile("back from break|back to work|lunch over", re.IGNORECASE)), get_back_to_work))
+    dp.add_handler(
+        MessageHandler(
+            Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), start_signing_in
+        )
+    )
+    dp.add_handler(
+        MessageHandler(
+            Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)),
+            start_signing_out,
+        )
+    )
+    dp.add_handler(
+        MessageHandler(
+            Filters.regex(
+                re.compile("back from break|back to work|lunch over", re.IGNORECASE)
+            ),
+            get_back_to_work,
+        )
+    )
     # dp.add_handler(MessageHandler(Filters.location, location))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command | Filters.location, connect_message_status))
+    dp.add_handler(
+        MessageHandler(
+            Filters.text & ~Filters.command | Filters.location, connect_message_status
+        )
+    )
 
     # Start the Bot
     updater.start_polling()

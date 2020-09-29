@@ -52,6 +52,25 @@ def create_log_basic(conn, log):
     return cursor.lastrowid
 
 
+def update_log_category(conn, category, log_id):
+    """
+    :param conn:
+    :param categroy:
+    :return log id:
+    """
+
+    sql = """UPDATE logbook
+        SET category = ?
+        WHERE id = ?"""
+
+    data = (category, log_id)
+
+    cursor = conn.cursor()
+    cursor.execute(sql, data)
+    conn.commit()
+    return cursor.lastrowid
+
+
 def update_log_sub_category(conn, sub_category):
     """
     :param conn:
@@ -88,8 +107,7 @@ def update_log_location(conn, location_data):
 
 
 def select_all_logs(conn):
-    """
-    """
+    """"""
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM logbook")
 
@@ -118,10 +136,11 @@ def write_csv(record):
 
 
 def select_logs_by_chat_id(conn, chat_id):
-    """
-    """
+    """"""
     cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM logbook WHERE chat_id = {chat_id} ORDER BY id DESC LIMIT 5")
+    cursor.execute(
+        f"SELECT * FROM logbook WHERE chat_id = {chat_id} ORDER BY id DESC LIMIT 6"
+    )
 
     rows = cursor.fetchall()
 
@@ -132,27 +151,38 @@ def update_remarks(conn, log_id, content):
 
     data = (content, log_id)
     cursor = conn.cursor()
-    cursor.execute("""UPDATE logbook
+    cursor.execute(
+        """UPDATE logbook
         SET remarks = ?
-        WHERE id = ?""", data)
+        WHERE id = ?""",
+        data,
+    )
     conn.commit()
 
 
 def select_logs_by_date(conn, start_date, end_date):
 
     cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM logbook WHERE strftime('%s', datetime) BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}') ORDER BY first_name;")
+    cursor.execute(
+        f"SELECT * FROM logbook WHERE strftime('%s', datetime) BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}') ORDER BY first_name;"
+    )
     rows = cursor.fetchall()
 
     return rows
 
 
 def select_log(conn, log_id):
-    """
-    """
+    """"""
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM logbook WHERE id=?", (log_id,))
 
     row = cursor.fetchall()
 
     return row
+
+
+def delete_log(conn, log_id):
+    """"""
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM logbook WHERE id = ?;", (log_id,))
+    conn.commit()
