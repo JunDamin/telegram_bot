@@ -36,8 +36,8 @@ sql_create_attendance_table = """CREATE TABLE IF NOT EXISTS logbook (
     first_name text NOT NULL,
     last_name text NOT NULL,
     datetime text NOT NULL,
-    type text NOT NULL,
-    work_type text,
+    category text NOT NULL,
+    sub_category text,
     longitude text,
     latitude text,
     remarks text
@@ -75,7 +75,7 @@ def main():
 
     dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), start_signing_in))
     dp.add_handler(MessageHandler(Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)), start_signing_out))
-    dp.add_handler(MessageHandler(Filters.regex(re.compile("back from break|back to work", re.IGNORECASE)), get_back_to_work))
+    dp.add_handler(MessageHandler(Filters.regex(re.compile("back from break|back to work|lunch over", re.IGNORECASE)), get_back_to_work))
     # dp.add_handler(MessageHandler(Filters.location, location))
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command | Filters.location, connect_message_status))
 

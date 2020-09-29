@@ -43,7 +43,7 @@ def create_log_basic(conn, log):
     :return log id:
     """
 
-    sql = """INSERT INTO logbook(chat_id, first_name, last_name, datetime, type)
+    sql = """INSERT INTO logbook(chat_id, first_name, last_name, datetime, category)
     VALUES(?, ?, ?, ?, ?)"""
 
     cursor = conn.cursor()
@@ -52,19 +52,19 @@ def create_log_basic(conn, log):
     return cursor.lastrowid
 
 
-def update_log_type(conn, work_type):
+def update_log_sub_category(conn, sub_category):
     """
     :param conn:
-    :param work_type:
+    :param sub_categroy:
     :return log id:
     """
 
     sql = """UPDATE logbook
-        SET work_type = ?
+        SET sub_category = ?
         WHERE id = ?"""
 
     cursor = conn.cursor()
-    cursor.execute(sql, work_type)
+    cursor.execute(sql, sub_category)
     conn.commit()
     return cursor.lastrowid
 
@@ -72,7 +72,7 @@ def update_log_type(conn, work_type):
 def update_log_location(conn, location_data):
     """
     :param conn:
-    :param work_type:
+    :param sub_categroy:
     :return log id:
     """
 
@@ -106,8 +106,8 @@ def write_csv(record):
             "first_name",
             "last_name",
             "datetime",
-            "type",
-            "work_type",
+            "category",
+            "sub_category",
             "longitude",
             "latitude",
             "remarks",
