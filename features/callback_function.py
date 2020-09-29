@@ -269,9 +269,17 @@ def ask_content_for_remarks(update, context):
     text = update.message.text
     try:
         int(text)
-        context.user_data["remarks_log_id"] = update.message.text
-        update.message.reply_text("What remarks? do you want to add?")
-        return True
+        conn = create_connection()
+        row = select_log(conn, text)
+        conn.close()
+
+        if row:
+            context.user_data["remarks_log_id"] = text
+            update.message.reply_text("What remarks? do you want to add?")
+            return True
+        else:
+            update.message.reply_text("log id is not exist. Please try again")
+            raise ValueError
     except ValueError:
         update.message.reply_text("Please. Send us numbers only.")
         return False
@@ -289,6 +297,7 @@ def set_remarks(update, context):
     update.message.reply_text("remarks has been updated.")
     context.user_data["log_id"] = log_id
     get_a_log(update, context)
+        
 
 
 @log_info()
