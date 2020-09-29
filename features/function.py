@@ -55,7 +55,7 @@ def get_logs_of_today():
     conn = create_connection("db.sqlite3")
     rows = select_logs_by_date(conn, start_date, end_date)
 
-    text_message = "Today's Logging"
+    text_message = f"Today's Logging\n({date.today().isoformat()})"
     chat_id = ""
     for log_id, _, first_name, last_name, _datetime, sign_type, work_type, longitude, latitude, remarks in rows:
         
@@ -65,12 +65,10 @@ def get_logs_of_today():
         dt = datetime.fromisoformat(_datetime)
 
         record = f"""
-        log id : {log_id}
-        datetime : {dt.strftime("%m-%d %H:%M")}
-        category : {sign_type}
-        work type : {work_type}
+        Log No.{log_id} : {dt.strftime("%H:%M")}
+        {sign_type} {": " + work_type if work_type else ""}
         location : {longitude}, {latitude}
-        remarks :{remarks}\n"""
+        remarks : {remarks}\n"""
 
         text_message += record
 
