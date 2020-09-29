@@ -164,7 +164,9 @@ def select_logs_by_date(conn, start_date, end_date):
 
     cursor = conn.cursor()
     cursor.execute(
-        f"SELECT * FROM logbook WHERE strftime('%s', datetime) BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}') ORDER BY first_name;"
+        f"SELECT * FROM logbook \
+        WHERE strftime('%s', datetime) \
+        BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}') ORDER BY first_name;"
     )
     rows = cursor.fetchall()
 

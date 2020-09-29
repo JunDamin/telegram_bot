@@ -13,6 +13,7 @@ from features.data_management import (
 )
 from features.log import log_info
 from features.function import (
+    private_only,
     update_location,
     update_sub_category,
     set_log_basic,
@@ -297,7 +298,6 @@ def set_remarks(update, context):
     update.message.reply_text("remarks has been updated.")
     context.user_data["log_id"] = log_id
     get_a_log(update, context)
-        
 
 
 @log_info()
@@ -414,7 +414,7 @@ def remove_log(update, context):
         conn = create_connection()
         row = select_log(conn, log_id)
         delete_log(conn, log_id)
-        
+
         header_message = f"Log No. {log_id} has been Deleted\n"
         text_message = make_text_from_logbook(row, header_message)
         update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())

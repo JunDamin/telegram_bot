@@ -9,6 +9,7 @@ from telegram.ext import (
     Filters,
 )
 from features.callback_function import (
+    
     start,
     help_command,
     send_file,
@@ -22,7 +23,7 @@ from features.callback_function import (
     ask_log_id_to_remove,
 )
 from features.data_management import create_connection, create_table
-
+from features.function import private_only
 
 load_dotenv()
 env_path = Path(".") / ".env"
@@ -65,16 +66,16 @@ def main():
     dp = updater.dispatcher
 
     # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("check", check_log))
+    dp.add_handler(CommandHandler("check", private_only(check_log)))
     dp.add_handler(CommandHandler("today", get_logs_today))
-    dp.add_handler(CommandHandler("logbook", send_file))
+    dp.add_handler(CommandHandler("logbook", private_only(send_file)))
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help_command))
-    dp.add_handler(CommandHandler("remarks", ask_log_id_for_remarks))
-    dp.add_handler(CommandHandler("remove", ask_log_id_to_remove))
 
     # on messages handling i.e message - set callback function for each message keywords
 
+    dp.add_handler(MessageHandler(Filters.regex("/로그삭제"), private_only(ask_log_id_to_remove)))
+    dp.add_handler(MessageHandler(Filters.regex("/비고작성"), private_only(ask_log_id_for_remarks)))
     dp.add_handler(
         MessageHandler(
             Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), start_signing_in

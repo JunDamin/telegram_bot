@@ -10,6 +10,16 @@ from features.data_management import (
 from datetime import datetime, date, timedelta
 
 
+def private_only(func):
+    def wrapper(*args, **kwargs):
+        chat_type = args[0].message.chat.type
+        if chat_type == "private":
+            return func(*args, **kwargs)
+        else:
+            args[0].message.reply_text("please send me as DM(Direct Message)")
+    return wrapper
+
+
 def update_location(id, longitude, latitude):
 
     conn = create_connection("db.sqlite3")
@@ -73,7 +83,7 @@ def make_text_from_logbook(rows, header):
 
         record = f"""
         {category} {"- " + sub_category if sub_category else ""}
-        Log No.{log_id} : {dt.strftime("%H:%M")}
+        Log No.{log_id} : {dt.strftime("%m-%d %H:%M")}
         location : {longitude if longitude else "-"}, {latitude if latitude else "-"}
         remarks : {remarks if remarks else "-"}\n"""
 
