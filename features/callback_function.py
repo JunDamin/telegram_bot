@@ -22,6 +22,21 @@ from features.function import (
     get_logs_of_the_day,
 )
 
+#Status variables for conversation
+# Sign in
+HANDLE_WORKPLACE, HANDLE_SIGN_IN_LOCATION = map(chr, range(2))
+# Sign out
+(HANDLE_SIGN_OUT_LOCATION,) = map(chr, range(2, 3))
+# Lunch break
+HANDLE_LUNCH_TYPE, HANDLE_LUNCH_LOCATION = map(chr, range(3, 5))
+# Delete log
+HANDLE_DELETE_LOG_ID, HANDLE_LOG_DELETE = map(chr, range(5, 7))
+# Add remarks
+HANDLE_REMARKS_LOG_ID, HANDLE_REMARKS = map(chr, range(7, 9))
+# regex pattern
+SUB_CATEGORY = "Office|Home"
+
+
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 
@@ -49,9 +64,10 @@ def send_file(update, context):
     update.message.reply_document(document=open("signing.csv", "rb"))
 
 
+# Sign in Conv
 @log_info()
 def start_signing_in(update, context):
-
+    print('test')
     # set variables
 
     bot = context.bot
@@ -97,9 +113,64 @@ You have been signed in with Log No. {log_id}"""
             "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
         )
 
-    return True
+    return HANDLE_WORKPLACE
 
 
+@log_info()
+def set_sub_category(update, context):
+    """Get sub category"""
+    # save log work type data
+    update_sub_category(context.user_data["log_id"], update.message.text)
+
+    keyboard = [
+        [
+            KeyboardButton("Share Location", request_location=True),
+        ],
+    ]
+
+    update.message.reply_text(
+        """I see! Please send me your location by click the button on your phone.
+(Desktop app can not send location)""",
+        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
+    )
+    return HANDLE_SIGN_IN_LOCATION
+
+
+@log_info()
+def set_location(update, context):
+    user_data = context.user_data
+    user_location = update.message.location
+
+    if user_location:
+        update_location(
+            user_data["log_id"],
+            user_location.longitude,
+            user_location.latitude,
+        )
+
+        update.message.reply_text(
+            f"longitude: {user_location.longitude}, latitude: {user_location.latitude} has been logged.\
+        Good bye!",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        return True
+    else:
+        keyboard = [
+            [
+                KeyboardButton("Share Location", request_location=True),
+            ],
+        ]
+
+        update.message.reply_text(
+            """Something went wrong. Please send again me your location by click the button on your phone.
+    (Desktop app can not send location)""",
+            reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
+        )
+
+        return ConversationHandler.END
+
+
+# Sign out conv
 @log_info()
 def start_signing_out(update, context):
 
@@ -154,60 +225,6 @@ def start_signing_out(update, context):
             "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
         )
 
-    return True
-
-
-@log_info()
-def set_location(update, context):
-    user_data = context.user_data
-    user_location = update.message.location
-
-    if user_location:
-        update_location(
-            user_data["log_id"],
-            user_location.longitude,
-            user_location.latitude,
-        )
-
-        update.message.reply_text(
-            f"longitude: {user_location.longitude}, latitude: {user_location.latitude} has been logged.\
-        Good bye!",
-            reply_markup=ReplyKeyboardRemove(),
-        )
-        return True
-    else:
-        keyboard = [
-            [
-                KeyboardButton("Share Location", request_location=True),
-            ],
-        ]
-
-        update.message.reply_text(
-            """Something went wrong. Please send again me your location by click the button on your phone.
-    (Desktop app can not send location)""",
-            reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
-        )
-
-        return False
-
-
-@log_info()
-def set_sub_category(update, context):
-    """Get sub category"""
-    # save log work type data
-    update_sub_category(context.user_data["log_id"], update.message.text)
-
-    keyboard = [
-        [
-            KeyboardButton("Share Location", request_location=True),
-        ],
-    ]
-
-    update.message.reply_text(
-        """I see! Please send me your location by click the button on your phone.
-(Desktop app can not send location)""",
-        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
-    )
     return True
 
 

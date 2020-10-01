@@ -23,6 +23,7 @@ def private_only(func):
 def public_only(func):
     def wrapper(*args, **kwargs):
         chat_type = args[0].message.chat.type
+        print(chat_type)
         if chat_type == "group":
             return func(*args, **kwargs)
         else:

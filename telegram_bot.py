@@ -6,10 +6,9 @@ from telegram.ext import (
     Updater,
     CommandHandler,
     MessageHandler,
-    Filters,
+    Filters
 )
 from features.callback_function import (
-    
     start,
     help_command,
     send_file,
@@ -24,6 +23,8 @@ from features.callback_function import (
 )
 from features.data_management import create_connection, create_table
 from features.function import private_only, public_only
+from features.conversations import sign_in_conv
+
 
 load_dotenv()
 env_path = Path(".") / ".env"
@@ -74,13 +75,13 @@ def main():
 
     # on messages handling i.e message - set callback function for each message keywords
 
-    dp.add_handler(MessageHandler(Filters.regex("/로그삭제"), private_only(ask_log_id_to_remove)))
-    dp.add_handler(MessageHandler(Filters.regex("/비고작성"), private_only(ask_log_id_for_remarks)))
     dp.add_handler(
-        MessageHandler(
-            Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)), public_only(start_signing_in)
-        )
+        MessageHandler(Filters.regex("/로그삭제"), private_only(ask_log_id_to_remove))
     )
+    dp.add_handler(
+        MessageHandler(Filters.regex("/비고작성"), private_only(ask_log_id_for_remarks))
+    )
+    dp.add_handler(sign_in_conv)
     dp.add_handler(
         MessageHandler(
             Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)),
