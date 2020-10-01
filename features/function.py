@@ -68,6 +68,20 @@ def get_logs_of_today():
     return text_message
 
 
+def get_logs_of_the_day(the_date):
+
+    start_date = the_date
+    end_date = start_date + timedelta(1)
+
+    conn = create_connection("db.sqlite3")
+    rows = select_logs_by_date(conn, start_date, end_date)
+
+    header_message = f"{start_date.isoformat()}'s Logging\n"
+    text_message = make_text_from_logbook(rows, header_message)
+
+    return text_message
+
+
 def make_text_from_logbook(rows, header):
 
     text_message = header

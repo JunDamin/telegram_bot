@@ -19,6 +19,7 @@ from features.function import (
     set_log_basic,
     get_logs_of_today,
     make_text_from_logbook,
+    get_logs_of_the_day,
 )
 
 # Define a few command handlers. These usually take the two arguments update and
@@ -161,18 +162,33 @@ def set_location(update, context):
     user_data = context.user_data
     user_location = update.message.location
 
-    update_location(
-        user_data["log_id"],
-        user_location.longitude,
-        user_location.latitude,
-    )
+    if user_location:
+        update_location(
+            user_data["log_id"],
+            user_location.longitude,
+            user_location.latitude,
+        )
 
-    update.message.reply_text(
-        f"longitude: {user_location.longitude}, latitude: {user_location.latitude} has been logged.\
-    Good bye!",
-        reply_markup=ReplyKeyboardRemove(),
-    )
-    return True
+        update.message.reply_text(
+            f"longitude: {user_location.longitude}, latitude: {user_location.latitude} has been logged.\
+        Good bye!",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        return True
+    else:
+        keyboard = [
+            [
+                KeyboardButton("Share Location", request_location=True),
+            ],
+        ]
+
+        update.message.reply_text(
+            """Something went wrong. Please send again me your location by click the button on your phone.
+    (Desktop app can not send location)""",
+            reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
+        )
+
+        return False
 
 
 @log_info()
@@ -216,6 +232,7 @@ def connect_message_status(update, context):
         "SET_REMARKS": (set_remarks, None),
         "REMOVE_LOG_ID": (ask_confirmation_of_removal, "CONFIRM_DELETE_LOG"),
         "CONFIRM_DELETE_LOG": (remove_log, None),
+        "DATE_FOR_LOG": (reply_logs_of_the_date, None),
     }
 
     if callback_dict.get(status):
@@ -423,3 +440,23 @@ def remove_log(update, context):
         text_message = "process has been stoped. The log has not been deleted."
         update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
     return True
+
+
+@log_info()
+def ask_date_for_log(update, context):
+
+    text_message = "Please send the date as YYYY-MM-DD format"
+    update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+    context.user_data["status"] = "DATE_FOR_LOG"
+
+
+def reply_logs_of_the_date(update, context):
+    the_date = update.message.text
+    import datetime.date as date
+
+    try:
+        text_message = get_logs_of_the_day(date.fromisoformat(the_date))
+        update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+        return True
+    except ValueError:
+        return False
