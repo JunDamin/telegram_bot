@@ -407,13 +407,21 @@ def ask_log_id_to_remove(update, context):
 
 @log_info()
 def ask_confirmation_of_removal(update, context):
-    text = update.message.text
+    log_id = update.message.text
     try:
-        int(text)
-        context.user_data["remove_log_id"] = text
+        int(log_id)
+        context.user_data["remove_log_id"] = log_id
         keyboard = [["YES", "NO"]]
+
+        conn = create_connection()
+        row = select_log(conn, log_id)
+        conn.close()
+
+        header_message = f"Do you really want to do remove log No.{log_id}?\n"
+        text_message = make_text_from_logbook(row, header_message)
+
         update.message.reply_text(
-            f"Do you really want to do remove log No.{text}?",
+            text_message,
             reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
         )
         return True
@@ -430,11 +438,10 @@ def remove_log(update, context):
         log_id = context.user_data.get("remove_log_id")
 
         conn = create_connection()
-        row = select_log(conn, log_id)
         delete_log(conn, log_id)
+        conn.close()
 
-        header_message = f"Log No. {log_id} has been Deleted\n"
-        text_message = make_text_from_logbook(row, header_message)
+        text_message = f"Log No. {log_id} has been Deleted\n"
         update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
     else:
         text_message = "process has been stoped. The log has not been deleted."
