@@ -13,7 +13,6 @@ from features.data_management import (
 )
 from features.log import log_info
 from features.function import (
-    private_only,
     update_location,
     update_sub_category,
     set_log_basic,
@@ -225,7 +224,7 @@ def start_signing_out(update, context):
             "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
         )
 
-    return True
+    return HANDLE_SIGN_OUT_LOCATION
 
 
 @log_info()

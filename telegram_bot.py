@@ -12,7 +12,6 @@ from features.callback_function import (
     start,
     help_command,
     send_file,
-    start_signing_in,
     start_signing_out,
     check_log,
     ask_log_id_for_remarks,
@@ -23,7 +22,7 @@ from features.callback_function import (
 )
 from features.data_management import create_connection, create_table
 from features.function import private_only, public_only
-from features.conversations import sign_in_conv
+from features.conversations import sign_in_conv, sign_out_conv
 
 
 load_dotenv()
@@ -82,12 +81,7 @@ def main():
         MessageHandler(Filters.regex("/비고작성"), private_only(ask_log_id_for_remarks))
     )
     dp.add_handler(sign_in_conv)
-    dp.add_handler(
-        MessageHandler(
-            Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)),
-            public_only(start_signing_out),
-        )
-    )
+    dp.add_handler(sign_out_conv)
     dp.add_handler(
         MessageHandler(
             Filters.regex(
