@@ -1,7 +1,7 @@
 import re
 from telegram.ext import ConversationHandler, MessageHandler, Filters
 from features.function import public_only, private_only
-from conversations import sign_in, sign_out, get_back, set_remarks
+from conversations import sign_in, sign_out, get_back, set_remarks, remove_log
 
 
 # sign in sequences from group chat to private
@@ -19,7 +19,7 @@ sign_in_conv = ConversationHandler(
     ],
     states={
         sign_in.HANDLE_SIGN_IN_LOCATION: [
-            MessageHandler(Filters.location, sign_in.set_location)
+            MessageHandler(Filters.location, sign_in.set_sign_in_location)
         ],
     },
     fallbacks=[],
@@ -34,11 +34,11 @@ start_sign_out_conv = MessageHandler(
 )
 sign_out_conv = ConversationHandler(
     entry_points=[
-        MessageHandler(Filters.location | Filters.private, sign_out.set_location)
+        MessageHandler(Filters.location & Filters.private, sign_out.set_sign_out_location)
     ],
     states={
         sign_out.HANDLE_SIGN_OUT_LOCATION: [
-            MessageHandler(Filters.location | Filters.private, sign_out.set_location)
+            MessageHandler(Filters.location & Filters.private, sign_out.set_sign_out_location)
         ],
     },
     fallbacks=[],
@@ -55,11 +55,14 @@ start_get_back_conv = MessageHandler(
 
 get_back_conv = ConversationHandler(
     entry_points=[
-        MessageHandler(Filters.regex("^Alone$|^With Someone$") | Filters.private, get_back.set_lunch_location)
+        MessageHandler(
+            Filters.regex("^Alone$|^With Someone$") & Filters.private,
+            get_back.set_lunch_location,
+        )
     ],
     states={
         get_back.HANDLE_LUNCH_LOCATION: [
-            MessageHandler(Filters.location | Filters.private, get_back.set_location)
+            MessageHandler(Filters.location & Filters.private, get_back.set_location)
         ],
     },
     fallbacks=[],
@@ -70,19 +73,51 @@ get_back_conv = ConversationHandler(
 
 set_remarks_conv = ConversationHandler(
     entry_points=[
-       MessageHandler(Filters.regex("/비고작성"), private_only(set_remarks.ask_log_id_for_remarks))
+        MessageHandler(
+            Filters.regex("/비고작성"), private_only(set_remarks.ask_log_id_for_remarks)
+        )
     ],
     states={
         set_remarks.HANDLE_REMARKS_LOG_ID: [
-            MessageHandler(Filters.regex("[0-9]*") | Filters.private, set_remarks.ask_content_for_remarks),
+            MessageHandler(
+                Filters.regex("[0-9]*") & Filters.private,
+                set_remarks.ask_content_for_remarks,
+            ),
         ],
         set_remarks.HANDLE_REMARKS_CONTENT: [
-            MessageHandler(Filters.text | Filters.private, set_remarks.set_remarks),
-        ]
+            MessageHandler(Filters.text & Filters.private, set_remarks.set_remarks),
+        ],
     },
     fallbacks=[],
     map_to_parent={},
 )
+
+
+# delete log conversation
+
+remove_log_conv = ConversationHandler(
+    entry_points=[
+        MessageHandler(
+            Filters.regex("/로그삭제"), private_only(remove_log.ask_log_id_to_remove)
+        )
+    ],
+    states={
+        remove_log.HANDLE_DELETE_LOG_ID: [
+            MessageHandler(
+                Filters.regex("[0-9]*") & Filters.private,
+                remove_log.ask_confirmation_of_removal,
+            ),
+        ],
+        remove_log.HANDLE_LOG_DELETE: [
+            MessageHandler(
+                Filters.regex("^YES$") & Filters.private, remove_log.remove_log
+            ),
+        ],
+    },
+    fallbacks=[],
+    map_to_parent={},
+)
+
 
 # add handlers from conversation
 handlers = (
@@ -93,4 +128,5 @@ handlers = (
     start_get_back_conv,
     get_back_conv,
     set_remarks_conv,
+    remove_log_conv,
 )

@@ -9,7 +9,6 @@ from features.callback_function import (
     send_file,
     check_log,
     get_logs_today,
-    ask_log_id_to_remove,
 )
 from features.data_management import create_connection, create_table
 from features.function import private_only
@@ -63,10 +62,6 @@ def main():
     dp.add_handler(CommandHandler("help", help_command))
 
     # on messages handling i.e message - set callback function for each message keywords
-
-    dp.add_handler(
-        MessageHandler(Filters.regex("/로그삭제"), private_only(ask_log_id_to_remove))
-    )
 
     # add hander from conversations
     deque(map(dp.add_handler, handlers))

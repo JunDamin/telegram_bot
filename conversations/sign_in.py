@@ -89,7 +89,7 @@ def set_sub_category(update, context):
 
 
 @log_info()
-def set_location(update, context):
+def set_sign_in_location(update, context):
     user_data = context.user_data
     user_location = update.message.location
 

@@ -71,9 +71,11 @@ def start_signing_out(update, context):
 
 
 @log_info()
-def set_location(update, context):
+def set_sign_out_location(update, context):
     user_data = context.user_data
     user_location = update.message.location
+    if user_data.get('status') != "SIGN_OUT":
+        return ConversationHandler.END
 
     if user_location:
         update_location(

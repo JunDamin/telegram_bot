@@ -63,7 +63,7 @@ Welcome back. You have been logged with Log No. {log_id}"""
             "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
         )
 
-    return HANDLE_LUNCH_LOCATION
+    return HANDLE_LUNCH_TYPE
 
 
 @log_info()
