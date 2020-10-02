@@ -10,6 +10,12 @@ from features.data_management import (
 from datetime import datetime, date, timedelta
 
 
+def check_status(context, status):
+    user_data = context.user_data
+    user_status = user_data.get("status")
+    return status == user_status
+
+
 def private_only(func):
     def wrapper(*args, **kwargs):
         chat_type = args[0].message.chat.type

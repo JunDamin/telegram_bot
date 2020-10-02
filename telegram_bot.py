@@ -2,28 +2,25 @@ import os
 import re
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
-from telegram.ext import (
-    Updater,
-    CommandHandler,
-    MessageHandler,
-    Filters
-)
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from features.callback_function import (
     start,
     help_command,
     send_file,
-    start_signing_out,
     check_log,
     ask_log_id_for_remarks,
-    connect_message_status,
     get_back_to_work,
     get_logs_today,
     ask_log_id_to_remove,
 )
 from features.data_management import create_connection, create_table
 from features.function import private_only, public_only
-from features.conversations import sign_in_conv, sign_out_conv
-
+from conversations.conversation import (
+    sign_in_conv,
+    start_sign_in_cov,
+    sign_out_conv,
+    start_sign_out_cov,
+)
 
 load_dotenv()
 env_path = Path(".") / ".env"
@@ -80,6 +77,22 @@ def main():
     dp.add_handler(
         MessageHandler(Filters.regex("/비고작성"), private_only(ask_log_id_for_remarks))
     )
+
+    # on messages handling start private conversation
+    dp.add_handler(
+        MessageHandler(
+            Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)),
+            public_only(start_sign_in_cov),
+        )
+    )
+    dp.add_handler(
+        MessageHandler(
+            Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)),
+            public_only(start_sign_out_cov),
+        )
+    )
+
+    # private conversations
     dp.add_handler(sign_in_conv)
     dp.add_handler(sign_out_conv)
     dp.add_handler(
@@ -91,11 +104,6 @@ def main():
         )
     )
     # dp.add_handler(MessageHandler(Filters.location, location))
-    dp.add_handler(
-        MessageHandler(
-            Filters.text & ~Filters.command | Filters.location, connect_message_status
-        )
-    )
 
     # Start the Bot
     updater.start_polling()
