@@ -1,5 +1,6 @@
 import os
 import re
+from collections import deque
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
@@ -16,8 +17,7 @@ from features.callback_function import (
 from features.data_management import create_connection, create_table
 from features.function import private_only, public_only
 from conversations.conversation import (
-    sign_in_conv,
-    start_sign_in_cov,
+    handlers,
     sign_out_conv,
     start_sign_out_cov,
 )
@@ -79,22 +79,13 @@ def main():
     )
 
     # on messages handling start private conversation
+
     dp.add_handler(
-        MessageHandler(
-            Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)),
-            public_only(start_sign_in_cov),
-        )
-    )
-    dp.add_handler(
-        MessageHandler(
-            Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)),
-            public_only(start_sign_out_cov),
-        )
+        
     )
 
-    # private conversations
-    dp.add_handler(sign_in_conv)
-    dp.add_handler(sign_out_conv)
+    # add hander from conversations
+    deque(map(dp.add_handler, handlers))
     dp.add_handler(
         MessageHandler(
             Filters.regex(

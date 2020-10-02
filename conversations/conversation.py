@@ -4,7 +4,10 @@ from features.function import public_only
 from conversations import sign_in, sign_out
 
 
-start_sign_in_cov = sign_in.start_signing_in
+start_sign_in_cov = MessageHandler(
+            Filters.regex(re.compile("sign.{0,3} in", re.IGNORECASE)),
+            public_only(sign_in.start_signing_in))
+
 sign_in_conv = ConversationHandler(
     entry_points=[
         MessageHandler(
@@ -21,7 +24,10 @@ sign_in_conv = ConversationHandler(
     map_to_parent={},
 )
 
-start_sign_out_cov = sign_out.start_signing_out
+start_sign_out_conv = MessageHandler(
+            Filters.regex(re.compile("sign.{0,3} out", re.IGNORECASE)),
+            public_only(sign_out.start_signing_out),
+        )
 sign_out_conv = ConversationHandler(
     entry_points=[MessageHandler(Filters.location | Filters.private, sign_out.set_location)],
     states={
@@ -32,3 +38,6 @@ sign_out_conv = ConversationHandler(
     fallbacks=[],
     map_to_parent={},
 )
+
+
+handlers = (sign_in_conv, start_sign_in_cov, start_sign_out_conv, sign_out_conv)

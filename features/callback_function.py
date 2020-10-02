@@ -72,29 +72,6 @@ def cancel(update, context):
     return ConversationHandler.END
 
 
-def connect_message_status(update, context):
-    status = context.user_data.get("status")
-    call_back = None
-
-    callback_dict = {
-        "SIGN_IN_WITH_SUB_CATEGORY": (set_sub_category, "SIGN_IN_WITH_LOCATION"),
-        "SIGN_IN_WITH_LOCATION": (set_location, None),
-        "SIGN_OUT_WITH_LOCATION": (set_location, None),
-        "ASK_REMARKS_CONTENT": (ask_content_for_remarks, "SET_REMARKS"),
-        "SET_REMARKS": (set_remarks, None),
-        "REMOVE_LOG_ID": (ask_confirmation_of_removal, "CONFIRM_DELETE_LOG"),
-        "CONFIRM_DELETE_LOG": (remove_log, None),
-        "DATE_FOR_LOG": (reply_logs_of_the_date, None),
-    }
-
-    if callback_dict.get(status):
-        call_back, next_status = callback_dict.get(status)
-
-    if call_back:
-        if call_back(update, context):
-            context.user_data["status"] = next_status
-
-
 @log_info()
 def check_log(update, context):
     user = update.message.from_user
