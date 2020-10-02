@@ -1,5 +1,4 @@
 import os
-import re
 from collections import deque
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
@@ -10,17 +9,12 @@ from features.callback_function import (
     send_file,
     check_log,
     ask_log_id_for_remarks,
-    get_back_to_work,
     get_logs_today,
     ask_log_id_to_remove,
 )
 from features.data_management import create_connection, create_table
-from features.function import private_only, public_only
-from conversations.conversation import (
-    handlers,
-    sign_out_conv,
-    start_sign_out_cov,
-)
+from features.function import private_only
+from conversations.conversation import handlers
 
 load_dotenv()
 env_path = Path(".") / ".env"
@@ -78,23 +72,8 @@ def main():
         MessageHandler(Filters.regex("/비고작성"), private_only(ask_log_id_for_remarks))
     )
 
-    # on messages handling start private conversation
-
-    dp.add_handler(
-        
-    )
-
     # add hander from conversations
     deque(map(dp.add_handler, handlers))
-    dp.add_handler(
-        MessageHandler(
-            Filters.regex(
-                re.compile("back from break|back to work|lunch over", re.IGNORECASE)
-            ),
-            public_only(get_back_to_work),
-        )
-    )
-    # dp.add_handler(MessageHandler(Filters.location, location))
 
     # Start the Bot
     updater.start_polling()

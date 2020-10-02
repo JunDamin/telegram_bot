@@ -2,24 +2,10 @@ import pytz
 from telegram import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from telegram.error import Unauthorized
 from telegram.ext import ConversationHandler
-from features.data_management import (
-    create_connection,
-    write_csv,
-    select_all_logs,
-    select_logs_by_chat_id,
-    select_log,
-    update_remarks,
-    delete_log,
-)
 from features.log import log_info
 from features.function import (
-    check_status,
     update_location,
-    update_sub_category,
     set_log_basic,
-    get_logs_of_today,
-    make_text_from_logbook,
-    get_logs_of_the_day,
 )
 
 # Sign out

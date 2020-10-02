@@ -4,23 +4,20 @@ from telegram.error import Unauthorized
 from telegram.ext import ConversationHandler
 from features.log import log_info
 from features.function import (
-    check_status,
-    update_location,
     update_sub_category,
+    update_location,
     set_log_basic,
 )
 
 
-# Sign in
-HANDLE_WORKPLACE, HANDLE_SIGN_IN_LOCATION = range(2)
+# Lunch break
+HANDLE_LUNCH_TYPE, HANDLE_LUNCH_LOCATION = map(chr, range(3, 5))
 
 
-# Sign in Conv
 @log_info()
-def start_signing_in(update, context):
+def get_back_to_work(update, context):
 
     # set variables
-
     bot = context.bot
     user = update.message.from_user
     log_basic = (
@@ -28,13 +25,15 @@ def start_signing_in(update, context):
         user.first_name,
         user.last_name,
         update.message.date.astimezone(pytz.timezone("Africa/Douala")),
-        "signing in",
+        "lunch over",
     )
     log_id = set_log_basic(log_basic)
-    SIGN_IN_GREETING = f"""Good morning, {user.first_name}.\n
-You have been signed in with Log No. {log_id}"""
+
+    # set message texts
+    SIGN_IN_GREETING = f"""Good afternoon, {user.first_name}.\n
+Welcome back. You have been logged with Log No. {log_id}"""
     SIGN_TIME = f"""signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}"""
-    ASK_INFO = """Would you like to share where you work?"""
+    ASK_INFO = """Did you have lunch with KOICA collagues?"""
     CHECK_DM = """"Please check my DM(Direct Message) to you"""
 
     # check if the chat is group or not
@@ -44,14 +43,14 @@ You have been signed in with Log No. {log_id}"""
 
     # set status
     context.user_data["log_id"] = log_id
-    context.user_data["category"] = "signing in"
-    context.user_data["status"] = "SIGN_IN"
+    context.user_data["category"] = "lunch over"
+    context.user_data["status"] = "BACK_TO_WORK"
 
     # send Private message to update
     try:
         text_message = f"{SIGN_IN_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
         reply_keyboard = [
-            ["Office", "Home"],
+            ["Alone", "With Someone"],
         ]
         bot.send_message(
             chat_id=user.id,
@@ -64,28 +63,27 @@ You have been signed in with Log No. {log_id}"""
             "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
         )
 
-    return HANDLE_WORKPLACE
+    return HANDLE_LUNCH_LOCATION
 
 
 @log_info()
-def set_sub_category(update, context):
-    """Get sub category"""
+def set_lunch_location(update, context):
+    """  """
     # save log work type data
-    if check_status(context, "SIGN_IN"):
-        update_sub_category(context.user_data["log_id"], update.message.text)
+    update_sub_category(context.user_data["log_id"], update.message.text)
 
-        keyboard = [
-            [
-                KeyboardButton("Share Location", request_location=True),
-            ],
-        ]
+    keyboard = [
+        [
+            KeyboardButton("Share Location", request_location=True),
+        ],
+    ]
 
-        update.message.reply_text(
-            """I see! Please send me your location by click the button on your phone.
-    (Desktop app can not send location)""",
-            reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
-        )
-    return HANDLE_SIGN_IN_LOCATION
+    update.message.reply_text(
+        """I see! Please send me your location by click the button on your phone.
+(Desktop app can not send location)""",
+        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
+    )
+    return HANDLE_LUNCH_LOCATION
 
 
 @log_info()
