@@ -1,6 +1,4 @@
-import pytz
-from telegram import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
-from telegram.error import Unauthorized
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import ConversationHandler
 from features.data_management import (
     create_connection,
@@ -8,26 +6,21 @@ from features.data_management import (
     select_all_logs,
     select_logs_by_chat_id,
     select_log,
-    update_remarks,
     delete_log,
 )
 from features.log import log_info
 from features.function import (
-    check_status,
-    update_location,
-    update_sub_category,
-    set_log_basic,
     get_logs_of_today,
     make_text_from_logbook,
     get_logs_of_the_day,
+    select_log_to_text,
 )
 
 # Status variables for conversation
 
 # Delete log
 HANDLE_DELETE_LOG_ID, HANDLE_LOG_DELETE = map(chr, range(5, 7))
-# Add remarks
-HANDLE_REMARKS_LOG_ID, HANDLE_REMARKS = map(chr, range(7, 9))
+
 # regex pattern
 SUB_CATEGORY = "Office|Home"
 
@@ -59,8 +52,6 @@ def send_file(update, context):
     update.message.reply_document(document=open("signing.csv", "rb"))
 
 
-
-
 @log_info()
 def cancel(update, context):
     update.message.reply_text(
@@ -89,60 +80,13 @@ def check_log(update, context):
 def get_a_log(update, context):
     log_id = context.user_data.get("log_id")
     if log_id:
-        conn = create_connection()
-        rows = select_log(conn, log_id)
-        conn.close()
-        print(rows)
-        header_message = "You have been logged as below.\n"
-        text_message = make_text_from_logbook(rows, header_message)
+        text_message = "You have been logged as below.\n"
+        text_message += select_log_to_text(log_id)
         update.message.reply_text(text_message)
 
     else:
         update.message.reply_text("please send me a log id first.")
         context.user_data["status"] = "GET_LOG_ID"
-
-
-@log_info()
-def ask_log_id_for_remarks(update, context):
-    update.message.reply_text(
-        "Which log do you want to add remarks?\nPlease send me the log number."
-    )
-    context.user_data["status"] = "ASK_REMARKS_CONTENT"
-
-
-@log_info()
-def ask_content_for_remarks(update, context):
-    text = update.message.text
-    try:
-        int(text)
-        conn = create_connection()
-        row = select_log(conn, text)
-        conn.close()
-
-        if row:
-            context.user_data["remarks_log_id"] = text
-            update.message.reply_text("What remarks? do you want to add?")
-            return True
-        else:
-            update.message.reply_text("log id is not exist. Please try again")
-            raise ValueError
-    except ValueError:
-        update.message.reply_text("Please. Send us numbers only.")
-        return False
-
-
-@log_info()
-def set_remarks(update, context):
-    log_id = context.user_data.get("remarks_log_id")
-    content = update.message.text
-
-    conn = create_connection()
-    update_remarks(conn, log_id, content)
-    conn.close()
-
-    update.message.reply_text("remarks has been updated.")
-    context.user_data["log_id"] = log_id
-    get_a_log(update, context)
 
 
 def get_logs_today(update, context):

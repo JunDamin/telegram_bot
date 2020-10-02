@@ -95,7 +95,7 @@ def set_location(update, context):
 
     if user_location:
         update_location(
-            user_data["log_id"],
+            user_data.get("log_id"),
             user_location.longitude,
             user_location.latitude,
         )
@@ -105,7 +105,7 @@ def set_location(update, context):
         Good bye!",
             reply_markup=ReplyKeyboardRemove(),
         )
-        return True
+        return ConversationHandler.END
     else:
         keyboard = [
             [

@@ -8,7 +8,6 @@ from features.callback_function import (
     help_command,
     send_file,
     check_log,
-    ask_log_id_for_remarks,
     get_logs_today,
     ask_log_id_to_remove,
 )
@@ -67,9 +66,6 @@ def main():
 
     dp.add_handler(
         MessageHandler(Filters.regex("/로그삭제"), private_only(ask_log_id_to_remove))
-    )
-    dp.add_handler(
-        MessageHandler(Filters.regex("/비고작성"), private_only(ask_log_id_for_remarks))
     )
 
     # add hander from conversations

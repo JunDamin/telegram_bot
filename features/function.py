@@ -23,6 +23,7 @@ def private_only(func):
             return func(*args, **kwargs)
         else:
             args[0].message.reply_text("please send me as DM(Direct Message)")
+
     return wrapper
 
 
@@ -34,6 +35,7 @@ def public_only(func):
             return func(*args, **kwargs)
         else:
             args[0].message.reply_text("please send in the group chat")
+
     return wrapper
 
 
@@ -89,7 +91,7 @@ def get_logs_of_the_day(the_date):
     return text_message
 
 
-def make_text_from_logbook(rows, header):
+def make_text_from_logbook(rows, header=""):
 
     text_message = header
 
@@ -143,3 +145,13 @@ def check_log_id(log_id):
         ans = True
 
     return ans
+
+
+def select_log_to_text(log_id):
+
+    conn = create_connection()
+    rows = select_log(conn, log_id)
+    conn.close()
+    text_message = make_text_from_logbook(rows)
+
+    return text_message
