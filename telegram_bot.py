@@ -31,7 +31,8 @@ sql_create_attendance_table = """CREATE TABLE IF NOT EXISTS logbook (
     sub_category text,
     longitude text,
     latitude text,
-    remarks text
+    remarks text,
+    confirmation text
 );"""
 conn = create_connection(database)
 if conn is not None:

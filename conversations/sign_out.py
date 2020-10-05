@@ -6,14 +6,21 @@ from features.log import log_info
 from features.function import (
     set_log_basic,
     set_location,
-    check_status,
     get_today_log_of_chat_id_category,
     make_text_from_logbook,
+    select_log_to_text,
 )
-from features.data_management import create_connection, select_log, delete_log
+from features.data_management import (
+    create_connection,
+    select_log,
+    delete_log,
+    update_log_confirmation,
+)
 
 # Sign out
-HANDLE_LOG_DELETE, HANDLE_SIGN_OUT_LOCATION = ["sign_out" + str(i) for i in range(2)]
+HANDLE_LOG_DELETE, HANDLE_SIGN_OUT_LOCATION, ASK_CONFIRMATION = [
+    "sign_out" + str(i) for i in range(3)
+]
 
 
 # Sign out conv
@@ -100,7 +107,7 @@ def start_signing_out(update, context):
 
             update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
 
-            text_message += "\nDo you want to edit it? or SKIP it?"
+            text_message += "\nDo you want to delete it and sign out again? or SKIP it?"
             reply_keyboard = [
                 ["Delete and Sign Out Again", "SKIP"],
             ]
@@ -177,9 +184,9 @@ def override_log(update, context):
 
 
 def ask_sign_out_location(update, text):
-    text_message = """Please send me your location by click the button on your phone.
-    (1. Please turn on your location service of your phone.
-    2. Desktop app can not send location)"""
+    text_message = """I see! Please send me your location by click the button on your phone.
+    1. Please check your location service is on./n(if not please turn on your location service)
+    2. Desktop app can not send location"""
     reply_keyboard = [
         [
             KeyboardButton(
@@ -197,10 +204,41 @@ def ask_sign_out_location(update, text):
 
 @log_info()
 def set_sign_out_location(update, context):
-    if not check_status(context, "SIGN_OUT"):
+    user_data = context.user_data
+    HEADER_MESSAGE = "You have signed out as below. Do you want to confirm?"
+    if set_location(update, context):
+        text_message = HEADER_MESSAGE
+        keyboard = ReplyKeyboardMarkup([["Confirm", "Edit"]], one_time_keyboard=True)
+        text_message += select_log_to_text(user_data.get("log_id"))
+        update.message.reply_text(
+            text_message,
+            reply_markup=keyboard,
+        )
+        return ASK_CONFIRMATION
+    else:
+        return ConversationHandler.END
+
+
+def confirm_the_data(update, context):
+    print("test")
+    choices = {"Confirm": True, "Edit": False}
+    answer = choices.get(update.message.text)
+    if answer:
+        conn = create_connection()
+        data = ("user confirmed", context.user_data.get("log_id"))
+        update_log_confirmation(conn, data)
+        [
+            context.user_data.pop(key)
+            for key in (
+                "user_id",
+                "first_name",
+                "last_name",
+                "datetime",
+                "category",
+                "status",
+            )
+        ]
+        update.message.reply_text("Confirmed", reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
     else:
-        HEADER_MESSAGE = "You have signed out as below."
-        set_location(update, context, HEADER_MESSAGE, ConversationHandler.END)
-        context.user_data.pop("status")
-    return ConversationHandler.END
+        return ask_sign_out_location(update, context)

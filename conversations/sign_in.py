@@ -10,16 +10,15 @@ from features.function import (
     get_today_log_of_chat_id_category,
     make_text_from_logbook,
     set_location,
+    select_log_to_text,
 )
-from features.data_management import create_connection, select_log, delete_log
+from features.data_management import create_connection, select_log, delete_log, update_log_confirmation
 
 
 # Sign in status
-(
-    HANDLE_WORKPLACE,
-    HANDLE_LOG_DELETE,
-    HANDLE_SIGN_IN_LOCATION,
-) = ["sign_in" + str(i) for i in range(3)]
+(HANDLE_WORKPLACE, HANDLE_LOG_DELETE, HANDLE_SIGN_IN_LOCATION, ASK_CONFIRMATION) = [
+    "sign_in" + str(i) for i in range(4)
+]
 
 
 # Sign in Conv
@@ -103,7 +102,7 @@ def start_signing_in(update, context):
 
             update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
 
-            text_message += "\nDo you want to edit it? or SKIP it?"
+            text_message += "\nDo you want to delete it and sign in again? or SKIP it?"
             reply_keyboard = [
                 ["Delete and Sign In Again", "SKIP"],
             ]
@@ -181,9 +180,7 @@ def override_log(update, context):
 
 def ask_sub_category(update, context):
 
-    text_message = (
-        "Would you like to share where you work?"
-    )
+    text_message = "Would you like to share where you work?"
     reply_keyboard = [
         ["Office", "Home"],
     ]
@@ -211,8 +208,8 @@ def set_sub_category(update, context):
 
         update.message.reply_text(
             """I see! Please send me your location by click the button on your phone.
-    (1. Please turn on your location service of your phone.
-    2. Desktop app can not send location)""",
+    1. Please check your location service is on.(if not please turn on your location service)
+    2. Desktop app can not send location""",
             reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
         )
     return HANDLE_SIGN_IN_LOCATION
@@ -220,7 +217,40 @@ def set_sub_category(update, context):
 
 @log_info()
 def set_sign_in_location(update, context):
-    HEADER_MESSAGE = "You have signed in as below."
-    set_location(update, context, HEADER_MESSAGE, ConversationHandler.END)
-    context.user_data.pop("status")
-    return ConversationHandler.END
+    user_data = context.user_data
+    HEADER_MESSAGE = "You have signed in as below. Do you want to confirm?"
+    if set_location(update, context):
+        text_message = HEADER_MESSAGE
+        keyboard = ReplyKeyboardMarkup([["Confirm", "Edit"]], one_time_keyboard=True)
+        text_message += select_log_to_text(user_data.get("log_id"))
+        update.message.reply_text(
+            text_message,
+            reply_markup=keyboard,
+        )
+        return ASK_CONFIRMATION
+    else:
+        return ConversationHandler.END
+
+
+def confirm_the_data(update, context):
+    choices = {"Confirm": True, "Edit": False}
+    answer = choices.get(update.message.text)
+    if answer:
+        conn = create_connection()
+        data = ("user confirmed", context.user_data.get("log_id"))
+        update_log_confirmation(conn, data)
+        [
+            context.user_data.pop(key)
+            for key in (
+                "user_id",
+                "first_name",
+                "last_name",
+                "datetime",
+                "category",
+                "status",
+            )
+        ]
+        update.message.reply_text("Confirmed", reply_markup=ReplyKeyboardRemove())
+        return ConversationHandler.END
+    else:
+        return ask_sub_category(update, context)

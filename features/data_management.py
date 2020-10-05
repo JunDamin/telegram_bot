@@ -123,6 +123,23 @@ def update_log_location(conn, location_data):
     return cursor.lastrowid
 
 
+def update_log_confirmation(conn, data):
+    """
+    :param conn:
+    :param data: (confirmation, id)
+    :return log id:
+    """
+
+    sql = """UPDATE logbook
+        SET confirmation = ?
+        WHERE id = ?"""
+
+    cursor = conn.cursor()
+    cursor.execute(sql, data)
+    conn.commit()
+    return cursor.lastrowid
+
+
 def select_all_logs(conn):
     """"""
     cursor = conn.cursor()

@@ -122,6 +122,7 @@ def make_text_from_logbook(rows, header=""):
         longitude,
         latitude,
         remarks,
+        _
     ) in rows:
 
         if chat_id != _:
@@ -187,20 +188,14 @@ def put_location(location, user_data):
     return False
 
 
-def set_location(update, context, success_header_message, END):
+def set_location(update, context):
     user_location = update.message.location
     user_data = context.user_data
     if put_location(user_location, user_data):
-        text_message = success_header_message
-        text_message += select_log_to_text(user_data.get('log_id'))
-        update.message.reply_text(
-            text_message,
-            reply_markup=ReplyKeyboardRemove(),
-        )
-        return END
+        return 1
     else:
         update.message.reply_text(
             """Something went wrong. Please try again""",
             reply_markup=ReplyKeyboardRemove(),
         )
-        return END
+        return 0
