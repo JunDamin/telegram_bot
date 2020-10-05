@@ -163,6 +163,7 @@ def write_csv(record):
             "longitude",
             "latitude",
             "remarks",
+            "confirmation",
         ]
         writer = csv.writer(signing_file)
         writer.writerow(fieldnames)

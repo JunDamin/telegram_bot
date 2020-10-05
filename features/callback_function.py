@@ -14,12 +14,6 @@ from features.function import (
     select_log_to_text,
 )
 
-# Status variables for conversation
-
-# regex pattern
-SUB_CATEGORY = "Office|Home"
-
-
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 

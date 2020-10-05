@@ -122,14 +122,13 @@ def make_text_from_logbook(rows, header=""):
         longitude,
         latitude,
         remarks,
-        _
+        confirmation,
     ) in rows:
-
         if chat_id != _:
             chat_id = _
             text_message += f"\n\n{first_name} {last_name}'s log as below\n"
-        dt = datetime.fromisoformat(_datetime)
 
+        dt = datetime.fromisoformat(_datetime)
         record = f"""
         {category} {"- " + sub_category if sub_category else ""}
         Log No.{log_id} : {dt.strftime("%m-%d %H:%M")}
