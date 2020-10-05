@@ -6,8 +6,10 @@ from features.data_management import (
     create_log_basic,
     select_logs_by_date,
     select_log,
+    select_log_by_chat_id_category_date,
 )
 from datetime import datetime, date, timedelta
+from telegram import ReplyKeyboardRemove
 
 
 def check_status(context, status):
@@ -57,6 +59,7 @@ def update_sub_category(log_id, sub_category):
 
 def set_log_basic(log_basic):
 
+    print(log_basic)
     conn = create_connection("db.sqlite3")
     log_id = create_log_basic(conn, log_basic)
     conn.close()
@@ -89,6 +92,18 @@ def get_logs_of_the_day(the_date):
     text_message = make_text_from_logbook(rows, header_message)
 
     return text_message
+
+
+def get_today_log_of_chat_id_category(chat_id, category):
+    start_date = date.today()
+    end_date = start_date + timedelta(1)
+
+    conn = create_connection("db.sqlite3")
+    rows = select_log_by_chat_id_category_date(
+        conn, chat_id, category, start_date, end_date
+    )
+    conn.close()
+    return rows
 
 
 def make_text_from_logbook(rows, header=""):
@@ -140,7 +155,6 @@ def check_log_id(log_id):
     conn = create_connection("db.sqlite3")
     row = select_log(conn, log_id)
     conn.close()
-
     if row:
         ans = True
 
@@ -155,3 +169,38 @@ def select_log_to_text(log_id):
     text_message = make_text_from_logbook(rows)
 
     return text_message
+
+
+def put_location(location, user_data):
+    """
+    docstring
+    """
+
+    if location:
+        update_location(
+            user_data.get("log_id"),
+            location.longitude,
+            location.latitude,
+        )
+        return True
+
+    return False
+
+
+def set_location(update, context, success_header_message, END):
+    user_location = update.message.location
+    user_data = context.user_data
+    if put_location(user_location, user_data):
+        text_message = success_header_message
+        text_message += select_log_to_text(user_data.get('log_id'))
+        update.message.reply_text(
+            text_message,
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        return END
+    else:
+        update.message.reply_text(
+            """Something went wrong. Please try again""",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        return END

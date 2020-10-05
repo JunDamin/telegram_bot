@@ -35,6 +35,23 @@ def create_table(conn, create_table_sql):
     return None
 
 
+def insert_record(conn, record):
+    """
+    Create a new log into logbook table
+    :param conn:
+    :param record: (chat_id, frist_name, last_name, datetime, category, sub_category, longitude, latitude)
+    :return log id:
+    """
+
+    sql = """INSERT INTO logbook(chat_id, first_name, last_name, datetime, category, sub_category, logitude, latitude)
+    VALUES(?, ?, ?, ?, ?, ?, ?, ?)"""
+
+    cursor = conn.cursor()
+    cursor.execute(sql, record)
+    conn.commit()
+    return cursor.lastrowid
+
+
 def create_log_basic(conn, log):
     """
     Create a new log into logbook table
@@ -147,6 +164,19 @@ def select_logs_by_chat_id(conn, chat_id):
     return rows
 
 
+def select_log_by_chat_id_category_date(conn, chat_id, category, start_date, end_date):
+    """"""
+    cursor = conn.cursor()
+    cursor.execute(
+        f"SELECT * FROM logbook \
+        WHERE (chat_id = '{chat_id}' AND category = '{category}' AND datetime > '{start_date}' AND '{end_date}') ORDER BY datetime;"
+    )
+
+    rows = cursor.fetchall()
+
+    return rows
+
+
 def update_remarks(conn, log_id, content):
 
     data = (content, log_id)
@@ -176,7 +206,7 @@ def select_logs_by_date(conn, start_date, end_date):
 def select_log(conn, log_id):
     """"""
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM logbook WHERE id=?", (log_id,))
+    cursor.execute("SELECT * FROM logbook WHERE id = ?", (log_id,))
 
     row = cursor.fetchall()
 

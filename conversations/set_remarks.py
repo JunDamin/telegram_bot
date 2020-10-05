@@ -4,7 +4,7 @@ from features.data_management import (
     select_log,
     update_remarks,
 )
-from features.function import select_log_to_text
+from features.function import select_log_to_text, check_log_id
 from features.log import log_info
 
 
@@ -26,12 +26,7 @@ def ask_log_id_for_remarks(update, context):
 def ask_content_for_remarks(update, context):
     text = update.message.text
     try:
-        int(text)
-        conn = create_connection()
-        row = select_log(conn, text)
-        conn.close()
-
-        if row:
+        if check_log_id(text):
             context.user_data["remarks_log_id"] = text
             update.message.reply_text("What remarks? do you want to add?")
             return HANDLE_REMARKS_CONTENT
