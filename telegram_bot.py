@@ -9,6 +9,7 @@ from features.callback_function import (
     send_file,
     check_log,
     get_logs_today,
+    get_work_content_file,
 )
 from features.data_management import start_database
 from features.function import private_only
@@ -39,6 +40,7 @@ def main():
     dp.add_handler(CommandHandler("check", private_only(check_log)))
     dp.add_handler(CommandHandler("today", get_logs_today))
     dp.add_handler(CommandHandler("logbook", private_only(send_file)))
+    dp.add_handler(CommandHandler("work_content", private_only(get_work_content_file)))
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help_command))
 

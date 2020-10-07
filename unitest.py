@@ -3,4 +3,5 @@ import unittest
 
 class TestSQLMethods(unittest.TestCase):
 
-    def test_insert_record
+    def test_insert_record():
+        pass

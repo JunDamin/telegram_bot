@@ -79,7 +79,7 @@ def create_table(conn, create_table_sql):
     return None
 
 
-def make_sql_insert_record(table_name, record):
+def make_sql_insert_record(table_name: str, record: dict):
     """
     docstring
     """
@@ -87,6 +87,42 @@ def make_sql_insert_record(table_name, record):
     values = tuple([str(record[key]) for key in keys])
     sql = f"""INSERT INTO {table_name}({", ".join(keys)})
     VALUES{values};"""
+
+    return sql
+
+
+def make_sql_select_record(table_name, columns, condition):
+    condition_list = [
+        " {} = '{}' ".format(key, condition.get(key)) for key in condition.keys()
+    ]
+
+    sql = f"""SELECT {", ".join(columns)} FROM {table_name}
+     WHERE {", ".join(condition_list)};"""
+
+    return sql
+
+
+def make_sql_update_record(
+    table_name: str, record: dict, pk: str, pk_name: Optional[str] = "id"
+) -> str:
+    """
+    docstring
+    """
+    keys = record.keys()
+
+    sql = f"""UPDATE {table_name} SET {', '.join(["{} = '{}'".format(key, record[key]) for key in keys])}
+    WHERE {pk_name} = {pk};"""
+
+    return sql
+
+
+def make_sql_delete_record(table_name, condition):
+    condition_list = [
+        " {} = '{}' ".format(key, condition.get(key)) for key in condition.keys()
+    ]
+
+    sql = f"""DELETE FROM {table_name}
+     WHERE {", ".join(condition_list)};"""
 
     return sql
 
@@ -108,17 +144,6 @@ def insert_record(conn, table_name: str, record: dict):
     return cursor.lastrowid
 
 
-def update_record(conn, table_name: str, record: dict, pk):
-
-    sql = make_sql_update_record(table_name, record, pk)
-    print(sql)
-
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    conn.commit()
-    return cursor.lastrowid
-
-
 def select_record(conn, table_name: str, columns: list, condition: dict):
 
     sql = make_sql_select_record(table_name, columns, condition)
@@ -131,15 +156,26 @@ def select_record(conn, table_name: str, columns: list, condition: dict):
     return rows
 
 
-def make_sql_select_record(table_name, columns, condition):
-    condition_list = [
-        " {} = '{}' ".format(key, condition.get(key)) for key in condition.keys()
-    ]
+def update_record(conn, table_name: str, record: dict, pk):
 
-    sql = f"""SELECT {", ".join(columns)} FROM {table_name} 
-    WHERE {", ".join(condition_list)};"""
+    sql = make_sql_update_record(table_name, record, pk)
+    print(sql)
 
-    return sql
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    conn.commit()
+    return cursor.lastrowid
+
+
+def delete_record(conn, table_name: str, condition: dict):
+
+    sql = make_sql_delete_record(table_name, condition)
+    print(sql)
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    conn.commit()
+
+    return cursor.lastrowid
 
 
 def create_log_basic(conn, record):
@@ -202,19 +238,6 @@ def update_log_location(conn, record, log_id):
     return cursor.lastrowid
 
 
-def make_sql_update_record(
-    table_name: str, record: dict, pk: str, pk_name: Optional[str] = "id"
-) -> str:
-    """
-    docstring
-    """
-    keys = record.keys()
-
-    sql = f"""UPDATE {table_name} SET {', '.join(["{} = '{}'".format(key, record[key]) for key in keys])} WHERE {pk_name} = {pk};"""
-
-    return sql
-
-
 def update_log_confirmation(conn, record, log_id):
     """
     :param conn:
@@ -240,23 +263,10 @@ def select_all_logs(conn):
     return rows
 
 
-def write_csv(record):
-    with open("signing.csv", mode="w", encoding="utf-8-sig") as signing_file:
-        fieldnames = [
-            "id",
-            "chat_id",
-            "first_name",
-            "last_name",
-            "datetime",
-            "category",
-            "sub_category",
-            "longitude",
-            "latitude",
-            "remarks",
-            "confirmation",
-        ]
+def write_csv(record, header: list, file_name: str):
+    with open(file_name, mode="w", encoding="utf-8-sig") as signing_file:
         writer = csv.writer(signing_file)
-        writer.writerow(fieldnames)
+        writer.writerow(header)
         writer.writerows(record)
 
 
@@ -276,8 +286,12 @@ def select_log_by_chat_id_category_date(conn, chat_id, category, start_date, end
     """"""
     cursor = conn.cursor()
     cursor.execute(
-        f"SELECT * FROM logbook \
-        WHERE (chat_id = '{chat_id}' AND category = '{category}' AND datetime > '{start_date}' AND '{end_date}') ORDER BY datetime;"
+        f"""SELECT * FROM logbook \
+         WHERE (chat_id = '{chat_id}'
+         AND category = '{category}'
+         AND datetime > '{start_date}'
+         AND datetime <'{end_date}')
+         ORDER BY datetime;"""
     )
 
     rows = cursor.fetchall()

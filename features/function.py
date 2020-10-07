@@ -11,7 +11,8 @@ from features.data_management import (
     update_log_confirmation,
     insert_record,
     update_record,
-    select_record
+    select_record,
+    delete_record,
 )
 from datetime import datetime, date, timedelta
 from telegram import ReplyKeyboardRemove
@@ -136,7 +137,7 @@ def make_text_from_logbook(rows, header=""):
         latitude,
         remarks,
         confirmation,
-        work_content_id
+        work_content_id,
     ) in rows:
         if chat_id != _:
             chat_id = _
@@ -150,9 +151,11 @@ def make_text_from_logbook(rows, header=""):
     remarks : {remarks if remarks else "-"}\n"""
         if work_content_id:
             conn = create_connection()
-            rows = select_record(conn, 'contents', ['work_content'], {'id': work_content_id})
+            rows = select_record(
+                conn, "contents", ["work_content"], {"id": work_content_id}
+            )
             work_content = rows[0][0].replace("\\n", "\n")
-            record += f'    work content : {work_content} \n'
+            record += f"    work content : {work_content} \n"
         text_message += record
 
     return text_message
@@ -236,7 +239,19 @@ def set_work_content(update, context, work_content):
     }
 
     conn = create_connection()
-    content_id = insert_record(conn, 'contents', record)
+    content_id = insert_record(conn, "contents", record)
     logbook_record = {"work_content_id": content_id}
-    update_record(conn, 'logbook', logbook_record, context.user_data.get('log_id'))
+    update_record(conn, "logbook", logbook_record, context.user_data.get("log_id"))
     conn.close()
+
+
+def delete_log_and_content(update, context):
+    """"""
+
+    log_id = context.user_data.get("log_id")
+    conn = create_connection()
+    work_content_id = select_record(conn, "logbook", ["work_content_id"], {"id": log_id})[0][0]
+    delete_record(conn, "contents", {"id": work_content_id})
+    delete_record(conn, "logbook", {"id": log_id})
+
+    return log_id

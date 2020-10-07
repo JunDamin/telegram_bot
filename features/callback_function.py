@@ -37,7 +37,20 @@ def send_file(update, context):
     conn = create_connection()
     record = select_all_logs(conn)
     conn.close()
-    write_csv(record)
+    header = [
+            "id",
+            "chat_id",
+            "first_name",
+            "last_name",
+            "datetime",
+            "category",
+            "sub_category",
+            "longitude",
+            "latitude",
+            "remarks",
+            "confirmation",
+        ]
+    write_csv(record, header, "signing.csv")
     update.message.reply_document(document=open("signing.csv", "rb"))
 
 
@@ -102,3 +115,16 @@ def reply_logs_of_the_date(update, context):
         return True
     except ValueError:
         return False
+
+
+@log_info()
+def get_work_content_file(update, context):
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM contents")
+    rows = cursor.fetchall()
+    conn.close()
+    record = [list(map(lambda x: str(x).replace("\\n", "\n"), row)) for row in rows]
+    write_csv(record, ["id", ], "work_content.csv")
+    update.message.reply_document(document=open("work_content.csv", "rb"))
+ 

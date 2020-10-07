@@ -11,11 +11,11 @@ from features.function import (
     select_log_to_text,
     confirm_record,
     set_work_content,
+    delete_log_and_content
 )
 from features.data_management import (
     create_connection,
     select_log,
-    delete_log,
 )
 
 # Sign out
@@ -59,7 +59,7 @@ def start_signing_out(update, context):
 
         try:
             text_message = f"{SIGN_OUT_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
-            reply_keyboard = [["I worked at Office", "I would like to report"]]
+            reply_keyboard = [["I worked at Office", "I would like to report because I worked at home"]]
             context.bot.send_message(
                 chat_id=user.id,
                 text=text_message,
@@ -135,12 +135,7 @@ def override_log(update, context):
     choices = {"REMOVE SIGN OUT LOG": True, "NO": False}
     answer = choices.get(update.message.text)
     if answer:
-        log_id = context.user_data.get("log_id")
-
-        conn = create_connection()
-        delete_log(conn, log_id)
-        conn.close()
-
+        log_id = delete_log_and_content(update, context)
         text_message = f"Log No. {log_id} has been Deleted\n"
         update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
     else:
@@ -203,7 +198,7 @@ def confirm_the_data(update, context):
 
 def ask_work_type(update, context):
     text_message = "Would you like to share your today's content of work?"
-    reply_keyboard = [["I worked at Office", "I would like to report"]]
+    reply_keyboard = [["I worked at Office", "I would like to report because I worked at home"]]
     update.message.reply_text(
         text=text_message,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
@@ -214,7 +209,7 @@ def ask_work_type(update, context):
 @log_info()
 def ask_work_content(update, context):
     update.message.reply_text(
-        "OK. Please share us your content work as a text message.", reply_markup=ReplyKeyboardRemove()
+        "OK. Please text me what you have done todya for work briefly.", reply_markup=ReplyKeyboardRemove()
     )
     return ANSWER_WORK_CONTENT
 
