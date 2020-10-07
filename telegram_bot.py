@@ -10,7 +10,7 @@ from features.callback_function import (
     check_log,
     get_logs_today,
 )
-from features.data_management import create_connection, create_table
+from features.data_management import start_database
 from features.function import private_only
 from conversations.conversation import handlers
 
@@ -18,31 +18,11 @@ load_dotenv()
 env_path = Path(".") / ".env"
 load_dotenv(dotenv_path=env_path)
 
-
-# DB Setting
-database = "db.sqlite3"
-sql_create_attendance_table = """CREATE TABLE IF NOT EXISTS logbook (
-    id integer PRIMARY KEY,
-    chat_id text NOT NULL,
-    first_name text NOT NULL,
-    last_name text NOT NULL,
-    datetime text NOT NULL,
-    category text NOT NULL,
-    sub_category text,
-    longitude text,
-    latitude text,
-    remarks text,
-    confirmation text
-);"""
-conn = create_connection(database)
-if conn is not None:
-    # Create Project table
-    create_table(conn, sql_create_attendance_table)
-conn.close()
-
 # Bot setting
 token = os.getenv("TOKEN")
 print("telegram bot started")
+
+start_database()
 
 
 def main():

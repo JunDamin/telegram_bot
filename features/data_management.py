@@ -4,6 +4,49 @@ from sqlite3 import Error
 from typing import Optional
 
 
+def start_database():
+    # DB Setting
+    database = "db.sqlite3"
+    sql_create_logbook_table = """CREATE TABLE IF NOT EXISTS logbook (
+        id integer PRIMARY KEY,
+        chat_id text NOT NULL,
+        first_name text NOT NULL,
+        last_name text NOT NULL,
+        datetime text NOT NULL,
+        category text NOT NULL,
+        sub_category text,
+        longitude text,
+        latitude text,
+        remarks text,
+        confirmation text,
+        FOREIGN KEY (work_content_id) REFERENCES contents(id)
+    );"""
+    sql_create_user_table = """CREATE TABLE IF NOT EXISTS users (
+        chat_id text PRIMARY KEY,
+        first_name text NOT NULL,
+        last_name text NOT NULL,
+        status text,
+        remarks text
+    );"""
+    sql_create_content_table = """CREATE TABLE IF NOT EXISTS contents (
+        id integer PRIMARY KEY,
+        chat_id text NOT NULL,
+        first_name text NOT NULL,
+        last_name text NOT NULL,
+        datetime text NOT NULL,
+        work_content text,
+        remarks text
+    );"""
+
+    conn = create_connection(database)
+    if conn is not None:
+        # Create Project table
+        create_table(conn, sql_create_user_table)
+        create_table(conn, sql_create_content_table)
+        create_table(conn, sql_create_logbook_table)
+    conn.close()
+
+
 def create_connection(db_file="db.sqlite3"):
     """Create a database connection to a SQLite
     :param db_file: database address
@@ -57,11 +100,46 @@ def insert_record(conn, table_name: str, record: dict):
     """
 
     sql = make_sql_insert_record(table_name, record)
+    print(sql)
 
     cursor = conn.cursor()
-    cursor.execute(sql, record)
+    cursor.execute(sql)
     conn.commit()
     return cursor.lastrowid
+
+
+def update_record(conn, table_name: str, record: dict, pk):
+
+    sql = make_sql_update_record(table_name, record, pk)
+    print(sql)
+
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    conn.commit()
+    return cursor.lastrowid
+
+
+def select_record(conn, table_name: str, columns: list, condition: dict):
+
+    sql = make_sql_select_record(table_name, columns, condition)
+    print(sql)
+    cursor = conn.cursor()
+    cursor.execute(sql)
+
+    rows = cursor.fetchall()
+
+    return rows
+
+
+def make_sql_select_record(table_name, columns, condition):
+    condition_list = [
+        " {} = '{}' ".format(key, condition.get(key)) for key in condition.keys()
+    ]
+
+    sql = f"""SELECT {", ".join(columns)} FROM {table_name} 
+    WHERE {", ".join(condition_list)};"""
+
+    return sql
 
 
 def create_log_basic(conn, record):

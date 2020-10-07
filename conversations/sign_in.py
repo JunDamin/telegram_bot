@@ -81,6 +81,7 @@ def start_signing_in(update, context):
             message = "You have already signed in as below. "
             text_message = make_text_from_logbook(rows, message)
 
+            # send to group chat
             update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
 
             text_message += "\nDo you want to delete it and sign in again? or SKIP it?"

@@ -9,6 +9,9 @@ from features.data_management import (
     select_log,
     select_log_by_chat_id_category_date,
     update_log_confirmation,
+    insert_record,
+    update_record,
+    select_record
 )
 from datetime import datetime, date, timedelta
 from telegram import ReplyKeyboardRemove
@@ -133,6 +136,7 @@ def make_text_from_logbook(rows, header=""):
         latitude,
         remarks,
         confirmation,
+        work_content_id
     ) in rows:
         if chat_id != _:
             chat_id = _
@@ -140,11 +144,15 @@ def make_text_from_logbook(rows, header=""):
 
         dt = datetime.fromisoformat(_datetime)
         record = f"""
-        {category} {"- " + sub_category if sub_category else ""}
-        Log No.{log_id} : {dt.strftime("%m-%d %H:%M")}
-        location : {longitude if longitude else "-"}, {latitude if latitude else "-"}
-        remarks : {remarks if remarks else "-"}\n"""
-
+    {category} {"- " + sub_category if sub_category else ""}
+    Log No.{log_id} : {dt.strftime("%m-%d %H:%M")}
+    location : {longitude if longitude else "-"}, {latitude if latitude else "-"}
+    remarks : {remarks if remarks else "-"}\n"""
+        if work_content_id:
+            conn = create_connection()
+            rows = select_record(conn, 'contents', ['work_content'], {'id': work_content_id})
+            work_content = rows[0][0].replace("\\n", "\n")
+            record += f'    work content : {work_content} \n'
         text_message += record
 
     return text_message
@@ -213,3 +221,22 @@ def confirm_record(update, context):
     conn = create_connection()
     record = {"confirmation": "user confirmed"}
     update_log_confirmation(conn, record, context.user_data.get("log_id"))
+
+
+def set_work_content(update, context, work_content):
+
+    user = update.message.from_user
+
+    record = {
+        "chat_id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "datetime": update.message.date.astimezone(pytz.timezone("Africa/Douala")),
+        "work_content": work_content,
+    }
+
+    conn = create_connection()
+    content_id = insert_record(conn, 'contents', record)
+    logbook_record = {"work_content_id": content_id}
+    update_record(conn, 'logbook', logbook_record, context.user_data.get('log_id'))
+    conn.close()

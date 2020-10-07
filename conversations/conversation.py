@@ -11,6 +11,9 @@ def cancel(update, context):
     return ConversationHandler.END
 
 
+cancel_handler = MessageHandler(Filters.regex("^SKIP$"), cancel)
+
+
 # sign in sequences from group chat to private
 start_sign_in_conv = MessageHandler(
     Filters.regex(re.compile("sign.{0,3} in.?$", re.IGNORECASE)),
@@ -141,7 +144,7 @@ sign_out_conv = ConversationHandler(
         sign_out.ANSWER_CONTENT_CONFIRMATION: [
             MessageHandler(
                 Filters.regex("^YES$") & Filters.private,
-                sign_out.ask_sign_out_location,
+                sign_out.save_content_and_ask_location,
             ),
             MessageHandler(
                 Filters.regex("^NO$") & Filters.private,
@@ -228,4 +231,5 @@ handlers = (
     sign_out_conv,
     set_remarks_conv,
     remove_log_conv,
+    cancel_handler,
 )

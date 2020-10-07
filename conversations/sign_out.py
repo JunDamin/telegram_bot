@@ -10,6 +10,7 @@ from features.function import (
     make_text_from_logbook,
     select_log_to_text,
     confirm_record,
+    set_work_content,
 )
 from features.data_management import (
     create_connection,
@@ -147,13 +148,13 @@ def override_log(update, context):
         update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
     log_id = set_basic_user_data(update, context, "signing out")
-    context.user_data['log_id'] = log_id
+    context.user_data["log_id"] = log_id
     return ask_work_type(update, context)
 
 
 def ask_sign_out_location(update, text):
     text_message = """I see! Please send me your location by click the button on your phone.
-    1. Please check your location service is on./n(if not please turn on your location service)
+    1. Please check your location service is on.\n(if not please turn on your location service)
     2. Desktop app can not send location"""
     reply_keyboard = [
         [
@@ -205,23 +206,26 @@ def ask_work_type(update, context):
     reply_keyboard = [["I worked at Office", "I would like to report"]]
     update.message.reply_text(
         text=text_message,
-        reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard, one_time_keyboard=True
-        ),
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
     return ANSWER_WORK_TYPE
 
 
+@log_info()
 def ask_work_content(update, context):
     update.message.reply_text(
-        "OK. Please share us your content work as a text message."
+        "OK. Please share us your content work as a text message.", reply_markup=ReplyKeyboardRemove()
     )
     return ANSWER_WORK_CONTENT
 
 
+@log_info()
 def check_work_content(update, context):
 
     answer = update.message.text
+
+    context.user_data["work_content"] = answer
+
     update.message.reply_text(
         f"Content of Work\n{answer}\n\nIs it ok?",
         reply_markup=ReplyKeyboardMarkup([["YES", "NO"]]),
@@ -230,6 +234,9 @@ def check_work_content(update, context):
     return ANSWER_CONTENT_CONFIRMATION
 
 
+@log_info()
 def save_content_and_ask_location(update, context):
-    # save content
+    print(context.user_data.get("work_content"))
+    set_work_content(update, context, context.user_data.get("work_content"))
+
     return ask_sign_out_location(update, context)
