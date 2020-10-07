@@ -20,7 +20,7 @@ from features.data_management import (
 
 
 # Lunch break
-HANDLE_LOG_DELETE, HANDLE_LUNCH_TYPE, HANDLE_LUNCH_LOCATION, ASK_CONFIRMATION = [
+ANSWER_LOG_DELETE, ANSWER_LUNCH_TYPE, ANSWER_LUNCH_LOCATION, ANSWER_CONFIRMATION = [
     "get_back" + str(i) for i in range(4, 8)
 ]
 
@@ -94,7 +94,7 @@ Welcome back. You have been logged with Log No. {log_id}"""
                 "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
             )
 
-        return HANDLE_LUNCH_TYPE
+        return ANSWER_LUNCH_TYPE
     else:
         record = rows[0]
         log_id = record[0]
@@ -141,14 +141,14 @@ def ask_confirmation_of_removal(update, context):
             text_message,
             reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
         )
-        return HANDLE_LOG_DELETE
+        return ANSWER_LOG_DELETE
     else:
         text_message = "An Error has been made. Please try again."
         update.message.reply_text(text=text_message, reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
 
 
-def override_log(update, context):
+def override_log_and_ask_lunch_type(update, context):
 
     choices = {"REMOVE GET BACK LOG": True, "NO": False}
     answer = choices.get(update.message.text)
@@ -192,11 +192,11 @@ def ask_lunch_type(update, context):
         text=text_message,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
-    return HANDLE_LUNCH_TYPE
+    return ANSWER_LUNCH_TYPE
 
 
 @log_info()
-def set_lunch_location(update, context):
+def set_lunch_type_and_ask_lunch_location(update, context):
     """  """
     # save log work type data
     update_sub_category(context.user_data["log_id"], update.message.text)
@@ -212,11 +212,11 @@ def set_lunch_location(update, context):
 (Desktop app can not send location)""",
         reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
     )
-    return HANDLE_LUNCH_LOCATION
+    return ANSWER_LUNCH_LOCATION
 
 
 @log_info()
-def set_get_back_location(update, context):
+def set_lunch_location_and_ask_confirmation(update, context):
     user_data = context.user_data
     HEADER_MESSAGE = "You have gotten back as below. Do you want to confirm?"
     if set_location(update, context):
@@ -227,7 +227,7 @@ def set_get_back_location(update, context):
             text_message,
             reply_markup=keyboard,
         )
-        return ASK_CONFIRMATION
+        return ANSWER_CONFIRMATION
     else:
         return ConversationHandler.END
 
@@ -253,6 +253,4 @@ def confirm_the_data(update, context):
         update.message.reply_text("Confirmed", reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
     else:
-        print("왜 이상한게 호출될까?")
         return ask_lunch_type(update, context)
-

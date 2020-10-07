@@ -61,3 +61,8 @@ def log_info(path="log_info.log"):
         return wrapper
 
     return info_log
+
+
+def write_info_log(text: str, path="log_info.log"):
+    logger = _generate_log(path)
+    logger.info(text)

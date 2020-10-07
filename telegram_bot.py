@@ -2,7 +2,7 @@ import os
 from collections import deque
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler
 from features.callback_function import (
     start,
     help_command,

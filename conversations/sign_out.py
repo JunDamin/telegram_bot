@@ -18,9 +18,14 @@ from features.data_management import (
 )
 
 # Sign out
-HANDLE_LOG_DELETE, HANDLE_SIGN_OUT_LOCATION, ASK_CONFIRMATION = [
-    "sign_out" + str(i) for i in range(3)
-]
+(
+    ANSWER_WORK_TYPE,
+    ANSWER_WORK_CONTENT,
+    ANSWER_CONTENT_CONFIRMATION,
+    ANSWER_LOG_DELETE,
+    ANSWER_SIGN_OUT_LOCATION,
+    ANSWER_CONFIRMATION,
+) = ["sign_out" + str(i) for i in range(6)]
 
 
 # Sign out conv
@@ -58,7 +63,7 @@ def start_signing_out(update, context):
             f"""Good evening, {user.first_name}.\nYou have been signed out today."""
         )
         SIGN_TIME = f"signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}"
-        ASK_INFO = "Please share your location infomation."
+        ASK_INFO = "Would you like to share your today's content of work?"
         CHECK_DM = """"Please check my DM(Direct Message) to you"""
         text_message = f"{SIGN_OUT_GREETING}/n{SIGN_TIME}"
 
@@ -73,14 +78,7 @@ def start_signing_out(update, context):
 
         try:
             text_message = f"{SIGN_OUT_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
-            reply_keyboard = [
-                [
-                    KeyboardButton(
-                        """Share location infomation for signing out""",
-                        request_location=True,
-                    ),
-                ]
-            ]
+            reply_keyboard = [["I worked at Office", "I would like to report"]]
             bot.send_message(
                 chat_id=user.id,
                 text=text_message,
@@ -94,7 +92,7 @@ def start_signing_out(update, context):
                 "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
             )
 
-        return HANDLE_SIGN_OUT_LOCATION
+        return ANSWER_WORK_TYPE
 
     else:
         record = rows[0]
@@ -118,7 +116,7 @@ def start_signing_out(update, context):
                     reply_keyboard, one_time_keyboard=True
                 ),
             )
-            return HANDLE_SIGN_OUT_LOCATION
+            return ANSWER_SIGN_OUT_LOCATION
 
         except Unauthorized:
             update.effective_message.reply_text(
@@ -144,7 +142,7 @@ def ask_confirmation_of_removal(update, context):
             text_message,
             reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
         )
-        return HANDLE_LOG_DELETE
+        return ANSWER_LOG_DELETE
     else:
         text_message = "An Error has been made. Please try again."
         update.message.reply_text(text=text_message, reply_markup=ReplyKeyboardRemove())
@@ -180,7 +178,7 @@ def override_log(update, context):
             )
         )
     )
-    return ask_sign_out_location(update, context)
+    return ask_work_type(update, context)
 
 
 def ask_sign_out_location(update, text):
@@ -199,7 +197,7 @@ def ask_sign_out_location(update, text):
         text=text_message,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
-    return HANDLE_SIGN_OUT_LOCATION
+    return ANSWER_SIGN_OUT_LOCATION
 
 
 @log_info()
@@ -214,7 +212,7 @@ def set_sign_out_location(update, context):
             text_message,
             reply_markup=keyboard,
         )
-        return ASK_CONFIRMATION
+        return ANSWER_CONFIRMATION
     else:
         return ConversationHandler.END
 
@@ -241,4 +239,39 @@ def confirm_the_data(update, context):
         update.message.reply_text("Confirmed", reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
     else:
-        return ask_sign_out_location(update, context)
+        return ask_work_type(update, context)
+
+
+def ask_work_type(update, context):
+    text_message = "Would you like to share your today's content of work?"
+    reply_keyboard = [["I worked at Office", "I would like to report"]]
+    update.message.reply_text(
+        text=text_message,
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard, one_time_keyboard=True
+        ),
+    )
+    return ANSWER_WORK_TYPE
+
+
+def ask_work_content(update, context):
+    update.message.reply_text(
+        "OK. Please share us your content work as a text message."
+    )
+    return ANSWER_WORK_CONTENT
+
+
+def check_work_content(update, context):
+
+    answer = update.message.text
+    update.message.reply_text(
+        f"Content of Work\n{answer}\n\nIs it ok?",
+        reply_markup=ReplyKeyboardMarkup([["YES", "NO"]]),
+    )
+
+    return ANSWER_CONTENT_CONFIRMATION
+
+
+def save_content_and_ask_location(update, context):
+    # save content
+    return ask_sign_out_location(update, context)

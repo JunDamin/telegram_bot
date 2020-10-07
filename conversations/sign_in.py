@@ -16,7 +16,7 @@ from features.data_management import create_connection, select_log, delete_log, 
 
 
 # Sign in status
-(HANDLE_WORKPLACE, HANDLE_LOG_DELETE, HANDLE_SIGN_IN_LOCATION, ASK_CONFIRMATION) = [
+(ANSWER_WORKPLACE, ANSWER_LOG_DELETE, ANSWER_SIGN_IN_LOCATION, ANSWER_CONFIRMATION) = [
     "sign_in" + str(i) for i in range(4)
 ]
 
@@ -90,7 +90,7 @@ def start_signing_in(update, context):
                 "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
             )
 
-        return HANDLE_WORKPLACE
+        return ANSWER_WORKPLACE
     else:
         record = rows[0]
         log_id = record[0]
@@ -137,14 +137,14 @@ def ask_confirmation_of_removal(update, context):
             text_message,
             reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
         )
-        return HANDLE_LOG_DELETE
+        return ANSWER_LOG_DELETE
     else:
         text_message = "An Error has been made. Please try again."
         update.message.reply_text(text=text_message, reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
 
 
-def override_log(update, context):
+def override_log_and_ask_work_type(update, context):
 
     choices = {"REMOVE SIGN IN LOG": True, "NO": False}
     answer = choices.get(update.message.text)
@@ -173,9 +173,8 @@ def override_log(update, context):
             )
         )
     )
-    result = ask_sub_category(update, context)
 
-    return result
+    return ask_sub_category(update, context)
 
 
 def ask_sub_category(update, context):
@@ -189,11 +188,11 @@ def ask_sub_category(update, context):
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
 
-    return HANDLE_WORKPLACE
+    return ANSWER_WORKPLACE
 
 
 @log_info()
-def set_sub_category(update, context):
+def set_sub_category_and_ask_location(update, context):
     """Get sub category"""
 
     # save log work type data
@@ -212,11 +211,11 @@ def set_sub_category(update, context):
     2. Desktop app can not send location""",
             reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
         )
-    return HANDLE_SIGN_IN_LOCATION
+    return ANSWER_SIGN_IN_LOCATION
 
 
 @log_info()
-def set_sign_in_location(update, context):
+def set_sign_in_location_and_ask_confirmation(update, context):
     user_data = context.user_data
     HEADER_MESSAGE = "You have signed in as below. Do you want to confirm?"
     if set_location(update, context):
@@ -227,7 +226,7 @@ def set_sign_in_location(update, context):
             text_message,
             reply_markup=keyboard,
         )
-        return ASK_CONFIRMATION
+        return ANSWER_CONFIRMATION
     else:
         return ConversationHandler.END
 
