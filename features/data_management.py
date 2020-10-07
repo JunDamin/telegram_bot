@@ -1,6 +1,7 @@
 import csv
 import sqlite3
 from sqlite3 import Error
+from typing import Optional
 
 
 def create_connection(db_file="db.sqlite3"):
@@ -35,7 +36,19 @@ def create_table(conn, create_table_sql):
     return None
 
 
-def insert_record(conn, record):
+def make_sql_insert_record(table_name, record):
+    """
+    docstring
+    """
+    keys = record.keys()
+    values = tuple([str(record[key]) for key in keys])
+    sql = f"""INSERT INTO {table_name}({", ".join(keys)})
+    VALUES{values};"""
+
+    return sql
+
+
+def insert_record(conn, table_name: str, record: dict):
     """
     Create a new log into logbook table
     :param conn:
@@ -43,8 +56,7 @@ def insert_record(conn, record):
     :return log id:
     """
 
-    sql = """INSERT INTO logbook(chat_id, first_name, last_name, datetime, category, sub_category, logitude, latitude)
-    VALUES(?, ?, ?, ?, ?, ?, ?, ?)"""
+    sql = make_sql_insert_record(table_name, record)
 
     cursor = conn.cursor()
     cursor.execute(sql, record)
@@ -52,7 +64,7 @@ def insert_record(conn, record):
     return cursor.lastrowid
 
 
-def create_log_basic(conn, log):
+def create_log_basic(conn, record):
     """
     Create a new log into logbook table
     :param conn:
@@ -60,82 +72,82 @@ def create_log_basic(conn, log):
     :return log id:
     """
 
-    sql = """INSERT INTO logbook(chat_id, first_name, last_name, datetime, category)
-    VALUES(?, ?, ?, ?, ?)"""
-
+    sql = make_sql_insert_record("logbook", record)
+    print(sql)
     cursor = conn.cursor()
-    cursor.execute(sql, log)
+    cursor.execute(sql)
     conn.commit()
     return cursor.lastrowid
 
 
-def update_log_category(conn, category, log_id):
+def update_log_category(conn, record, log_id):
     """
     :param conn:
     :param categroy:
     :return log id:
     """
 
-    sql = """UPDATE logbook
-        SET category = ?
-        WHERE id = ?"""
-
-    data = (category, log_id)
+    sql = make_sql_update_record("logbook", record, log_id)
 
     cursor = conn.cursor()
-    cursor.execute(sql, data)
+    cursor.execute(sql)
     conn.commit()
     return cursor.lastrowid
 
 
-def update_log_sub_category(conn, sub_category):
+def update_log_sub_category(conn, record, log_id):
     """
     :param conn:
     :param sub_categroy:
     :return log id:
     """
 
-    sql = """UPDATE logbook
-        SET sub_category = ?
-        WHERE id = ?"""
+    sql = make_sql_update_record("logbook", record, log_id)
 
     cursor = conn.cursor()
-    cursor.execute(sql, sub_category)
+    cursor.execute(sql)
     conn.commit()
     return cursor.lastrowid
 
 
-def update_log_location(conn, location_data):
+def update_log_location(conn, record, log_id):
     """
     :param conn:
     :param sub_categroy:
     :return log id:
     """
 
-    sql = """UPDATE logbook
-        SET longitude = ?,
-            latitude = ?
-        WHERE id = ?"""
-
+    sql = make_sql_update_record("logbook", record, log_id)
     cursor = conn.cursor()
-    cursor.execute(sql, location_data)
+    cursor.execute(sql)
     conn.commit()
     return cursor.lastrowid
 
 
-def update_log_confirmation(conn, data):
+def make_sql_update_record(
+    table_name: str, record: dict, pk: str, pk_name: Optional[str] = "id"
+) -> str:
+    """
+    docstring
+    """
+    keys = record.keys()
+
+    sql = f"""UPDATE {table_name} SET {', '.join(["{} = '{}'".format(key, record[key]) for key in keys])} WHERE {pk_name} = {pk};"""
+
+    return sql
+
+
+def update_log_confirmation(conn, record, log_id):
     """
     :param conn:
     :param data: (confirmation, id)
     :return log id:
     """
 
-    sql = """UPDATE logbook
-        SET confirmation = ?
-        WHERE id = ?"""
+    sql = make_sql_update_record("logbook", record, log_id)
 
     cursor = conn.cursor()
-    cursor.execute(sql, data)
+    cursor.execute(sql)
     conn.commit()
     return cursor.lastrowid
 
@@ -195,16 +207,12 @@ def select_log_by_chat_id_category_date(conn, chat_id, category, start_date, end
     return rows
 
 
-def update_remarks(conn, log_id, content):
+def update_remarks(conn, record, log_id):
 
-    data = (content, log_id)
+    sql = make_sql_update_record("logbook", record, log_id)
+
     cursor = conn.cursor()
-    cursor.execute(
-        """UPDATE logbook
-        SET remarks = ?
-        WHERE id = ?""",
-        data,
-    )
+    cursor.execute(sql)
     conn.commit()
 
 

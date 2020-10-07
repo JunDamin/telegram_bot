@@ -5,16 +5,16 @@ from telegram.ext import ConversationHandler
 from features.log import log_info
 from features.function import (
     update_sub_category,
-    set_log_basic,
+    set_basic_user_data,
     get_today_log_of_chat_id_category,
     make_text_from_logbook,
     select_log_to_text,
     set_location,
     select_log,
+    confirm_record,
 )
 from features.data_management import (
     create_connection,
-    update_log_confirmation,
     delete_log,
 )
 
@@ -28,36 +28,12 @@ ANSWER_LOG_DELETE, ANSWER_LUNCH_TYPE, ANSWER_LUNCH_LOCATION, ANSWER_CONFIRMATION
 @log_info()
 def get_back_to_work(update, context):
 
-    bot = context.bot
+    # check
     user = update.message.from_user
-
-    basic_user_data = {
-        "user_id": user.id,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "datetime": update.message.date.astimezone(pytz.timezone("Africa/Douala")),
-        "category": "lunch over",
-    }
-    for key in basic_user_data:
-        context.user_data[key] = basic_user_data[key]
-
-    rows = get_today_log_of_chat_id_category(
-        basic_user_data["user_id"], basic_user_data["category"]
-    )
+    rows = get_today_log_of_chat_id_category(user.id, "getting back")
 
     if not rows:
-        log_id = set_log_basic(
-            tuple(
-                basic_user_data[key]
-                for key in (
-                    "user_id",
-                    "first_name",
-                    "last_name",
-                    "datetime",
-                    "category",
-                )
-            )
-        )
+        log_id = set_basic_user_data(update, context, "getting back")
 
         # set message texts
         SIGN_IN_GREETING = f"""Good afternoon, {user.first_name}.\n
@@ -81,7 +57,7 @@ Welcome back. You have been logged with Log No. {log_id}"""
             reply_keyboard = [
                 ["Without any member of KOICA", "With KOICA Colleagues"],
             ]
-            bot.send_message(
+            context.bot.send_message(
                 chat_id=user.id,
                 text=text_message,
                 reply_markup=ReplyKeyboardMarkup(
@@ -110,7 +86,7 @@ Welcome back. You have been logged with Log No. {log_id}"""
             reply_keyboard = [
                 ["Delete and Get Back to Work Again", "SKIP"],
             ]
-            bot.send_message(
+            context.bot.send_message(
                 chat_id=user.id,
                 text=text_message,
                 reply_markup=ReplyKeyboardMarkup(
@@ -165,21 +141,10 @@ def override_log_and_ask_lunch_type(update, context):
         text_message = "process has been stoped. The log has not been deleted."
         update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
-    log_id = set_log_basic(
-        tuple(
-            context.user_data.get(key)
-            for key in (
-                "user_id",
-                "first_name",
-                "last_name",
-                "datetime",
-                "category",
-            )
-        )
-    )
-    result = ask_lunch_type(update, context)
 
-    return result
+    log_id = set_basic_user_data(update, context, "signing out")
+    context.user_data["log_id"] = log_id
+    return ask_lunch_type(update, context)
 
 
 @log_info()
@@ -236,20 +201,8 @@ def confirm_the_data(update, context):
     choices = {"Confirm": True, "Edit": False}
     answer = choices.get(update.message.text)
     if answer:
-        conn = create_connection()
-        data = ("user confirmed", context.user_data.get("log_id"))
-        update_log_confirmation(conn, data)
-        [
-            context.user_data.pop(key)
-            for key in (
-                "user_id",
-                "first_name",
-                "last_name",
-                "datetime",
-                "category",
-                "status",
-            )
-        ]
+        confirm_record(update, context)
+        context.user_data.clear()
         update.message.reply_text("Confirmed", reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
     else:

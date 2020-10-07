@@ -1,3 +1,4 @@
+import pytz
 from features.data_management import (
     create_connection,
     update_log_category,
@@ -7,6 +8,7 @@ from features.data_management import (
     select_logs_by_date,
     select_log,
     select_log_by_chat_id_category_date,
+    update_log_confirmation,
 )
 from datetime import datetime, date, timedelta
 from telegram import ReplyKeyboardRemove
@@ -41,28 +43,36 @@ def public_only(func):
     return wrapper
 
 
-def update_location(id, longitude, latitude):
-
-    conn = create_connection("db.sqlite3")
-    location_data = (longitude, latitude, id)
-    update_log_location(conn, location_data)
-    conn.close()
-
-
 def update_sub_category(log_id, sub_category):
 
     conn = create_connection("db.sqlite3")
-    sub_category = (sub_category, log_id)
-    update_log_sub_category(conn, sub_category)
+    record = {"sub_category": sub_category}
+    update_log_sub_category(conn, record, log_id)
     conn.close()
 
 
-def set_log_basic(log_basic):
+def set_basic_user_data(update, context, category):
+    """
 
-    print(log_basic)
+    return: log_id
+    """
+    user = update.message.from_user
+
+    basic_user_data = {
+        "chat_id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "datetime": update.message.date.astimezone(pytz.timezone("Africa/Douala")),
+        "category": category,
+    }
+
     conn = create_connection("db.sqlite3")
-    log_id = create_log_basic(conn, log_basic)
+    log_id = create_log_basic(conn, basic_user_data)
     conn.close()
+
+    for key in basic_user_data:
+        context.user_data[key] = basic_user_data[key]
+
     return log_id
 
 
@@ -143,8 +153,8 @@ def make_text_from_logbook(rows, header=""):
 def update_category(log_id, category):
 
     conn = create_connection("db.sqlite3")
-    category = (category, log_id)
-    update_log_category(conn, category)
+    record = {"category": category}
+    update_log_category(conn, record, log_id)
     conn.close()
 
 
@@ -177,11 +187,10 @@ def put_location(location, user_data):
     """
 
     if location:
-        update_location(
-            user_data.get("log_id"),
-            location.longitude,
-            location.latitude,
-        )
+        conn = create_connection("db.sqlite3")
+        record = {"longitude": location.longitude, "latitude": location.latitude}
+        update_log_location(conn, record, str(user_data.get("log_id")))
+        conn.close()
         return True
 
     return False
@@ -198,3 +207,9 @@ def set_location(update, context):
             reply_markup=ReplyKeyboardRemove(),
         )
         return 0
+
+
+def confirm_record(update, context):
+    conn = create_connection()
+    record = {"confirmation": "user confirmed"}
+    update_log_confirmation(conn, record, context.user_data.get("log_id"))

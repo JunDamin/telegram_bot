@@ -4,17 +4,17 @@ from telegram.error import Unauthorized
 from telegram.ext import ConversationHandler
 from features.log import log_info
 from features.function import (
-    set_log_basic,
+    set_basic_user_data,
     set_location,
     get_today_log_of_chat_id_category,
     make_text_from_logbook,
     select_log_to_text,
+    confirm_record,
 )
 from features.data_management import (
     create_connection,
     select_log,
     delete_log,
-    update_log_confirmation,
 )
 
 # Sign out
@@ -32,35 +32,15 @@ from features.data_management import (
 @log_info()
 def start_signing_out(update, context):
 
-    # set variables
-
-    bot = context.bot
+    # check
     user = update.message.from_user
-
-    basic_user_data = {
-        "user_id": user.id,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "datetime": update.message.date.astimezone(pytz.timezone("Africa/Douala")),
-        "category": "signing out",
-    }
-    for key in basic_user_data:
-        context.user_data[key] = basic_user_data[key]
-
-    rows = get_today_log_of_chat_id_category(
-        basic_user_data["user_id"], basic_user_data["category"]
-    )
+    rows = get_today_log_of_chat_id_category(user.id, "signing out")
 
     if not rows:
-        log_id = set_log_basic(
-            tuple(
-                basic_user_data[i]
-                for i in ("user_id", "first_name", "last_name", "datetime", "category")
-            )
-        )
+        log_id = set_basic_user_data(update, context, "signing out")
 
         SIGN_OUT_GREETING = (
-            f"""Good evening, {user.first_name}.\nYou have been signed out today."""
+            f"""Good evening, {user.first_name}.\nYou have signed out today."""
         )
         SIGN_TIME = f"signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}"
         ASK_INFO = "Would you like to share your today's content of work?"
@@ -79,7 +59,7 @@ def start_signing_out(update, context):
         try:
             text_message = f"{SIGN_OUT_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
             reply_keyboard = [["I worked at Office", "I would like to report"]]
-            bot.send_message(
+            context.bot.send_message(
                 chat_id=user.id,
                 text=text_message,
                 reply_markup=ReplyKeyboardMarkup(
@@ -109,7 +89,7 @@ def start_signing_out(update, context):
             reply_keyboard = [
                 ["Delete and Sign Out Again", "SKIP"],
             ]
-            bot.send_message(
+            context.bot.send_message(
                 chat_id=user.id,
                 text=text_message,
                 reply_markup=ReplyKeyboardMarkup(
@@ -166,18 +146,8 @@ def override_log(update, context):
         text_message = "process has been stoped. The log has not been deleted."
         update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
-    log_id = set_log_basic(
-        tuple(
-            context.user_data.get(key)
-            for key in (
-                "user_id",
-                "first_name",
-                "last_name",
-                "datetime",
-                "category",
-            )
-        )
-    )
+    log_id = set_basic_user_data(update, context, "signing out")
+    context.user_data['log_id'] = log_id
     return ask_work_type(update, context)
 
 
@@ -222,20 +192,8 @@ def confirm_the_data(update, context):
     choices = {"Confirm": True, "Edit": False}
     answer = choices.get(update.message.text)
     if answer:
-        conn = create_connection()
-        data = ("user confirmed", context.user_data.get("log_id"))
-        update_log_confirmation(conn, data)
-        [
-            context.user_data.pop(key)
-            for key in (
-                "user_id",
-                "first_name",
-                "last_name",
-                "datetime",
-                "category",
-                "status",
-            )
-        ]
+        confirm_record(update, context)
+        context.user_data.clear()
         update.message.reply_text("Confirmed", reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
     else:
