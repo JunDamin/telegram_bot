@@ -11,7 +11,8 @@ from features.function import (
     select_log_to_text,
     confirm_record,
     set_work_content,
-    delete_log_and_content
+    delete_log_and_content,
+    delete_content
 )
 from features.data_management import (
     create_connection,
@@ -197,6 +198,7 @@ def confirm_the_data(update, context):
 
 
 def ask_work_type(update, context):
+    delete_content(update, context)
     text_message = "Would you like to share your today's content of work?"
     reply_keyboard = [["I worked at Office", "I would like to report because I worked at home"]]
     update.message.reply_text(
