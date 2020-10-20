@@ -37,16 +37,16 @@ async def test_main(client: TelegramClient):
 
     # You can print all the dialogs/conversations that you are part of:
     async for dialog in client.iter_dialogs():
-        print(dialog.name, 'has ID', dialog.id)
+        print(dialog.name, "has ID", dialog.id)
 
     # ...Sign In Test
-    await client.send_message(-444903176, 'sign in')
+    await client.send_message(-444903176, "sign in")
     messages = await client.get_messages(-444903176)
     for message in messages:
         print(message.text)
-    
+
     sleep(1)
-    
+
     messages = await client.get_messages("@KOICA_test_bot")
     for message in messages:
         print(message.text)
@@ -54,7 +54,7 @@ async def test_main(client: TelegramClient):
     # Signing in conversation
     async with client.conversation("@KOICA_test_bot") as conv:
 
-        # response 
+        # response
         await conv.send_message("Delete and Sign In Again")
         response = await conv.get_response()
         print(response.text)
@@ -64,13 +64,25 @@ async def test_main(client: TelegramClient):
         await conv.send_message("REMOVE SIGN IN LOG")
         response = await conv.get_response()
         print(response.text)
-        assert 0 == response.text.find("Do you really want to do remove log No.")
+        assert 0 == response.text.find("Log No.")
+        response = await conv.get_response()
+        print(response.text)
 
+        # check confirmation
+        await conv.send_message("Office")
+        response = await conv.get_response()
+        print(response.text)
+        assert 0 == response.text.find("I see")
+        
+        await conv.send_message("DEROUTE")
+        response = await conv.get_response()
+        print(response.text)
+        await conv.send_message("Confirm")
 
     await client.disconnect()
     await client.disconnected
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     client = TelegramClient(StringSession(session_str), api_id, api_hash)
     client.loop.run_until_complete(test_main(client))

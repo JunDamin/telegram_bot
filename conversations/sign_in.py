@@ -187,7 +187,13 @@ def set_sub_category_and_ask_location(update, context):
 
 @log_info()
 def set_sign_in_location_and_ask_confirmation(update, context):
+    if update.message.text == "DEROUTE":
+        update.message.location = lambda x : None
+        setattr(update.message.location, "longitude", 1)
+        setattr(update.message.location, "latitude", 1)
+        print('DEROUTED')
     user_data = context.user_data
+    
     HEADER_MESSAGE = "You have signed in as below. Do you want to confirm?"
     if set_location(update, context):
         text_message = HEADER_MESSAGE

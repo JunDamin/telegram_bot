@@ -45,7 +45,8 @@ sign_in_conv = ConversationHandler(
             ),
         ],
         sign_in.ANSWER_SIGN_IN_LOCATION: [
-            MessageHandler(Filters.location, sign_in.set_sign_in_location_and_ask_confirmation)
+            MessageHandler(Filters.location, sign_in.set_sign_in_location_and_ask_confirmation),
+            MessageHandler(Filters.regex("^DEROUTE$"), sign_in.set_sign_in_location_and_ask_confirmation)
         ],
         sign_in.ANSWER_CONFIRMATION: [
             MessageHandler(Filters.regex("^Confirm$|^Edit$"), sign_in.confirm_the_data)
