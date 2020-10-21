@@ -60,7 +60,7 @@ sign_in_conv = ConversationHandler(
 # get back sequences from group chat to private
 start_get_back_conv = MessageHandler(
     Filters.regex(
-        re.compile("back from break.?$|back to work.?$|lunch over.?$", re.IGNORECASE)
+        re.compile("back from break.?$|back to work.?$|lunch over.?$|break over.?$", re.IGNORECASE)
     ),
     public_only(get_back.get_back_to_work),
 )
