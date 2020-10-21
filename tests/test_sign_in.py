@@ -21,6 +21,13 @@ bot_id = "@KOICA_test_bot"
 sleep_time = 0.5
 
 
+async def get_reply_of_message_in_conv(message: str, conv):
+    await conv.send_message(message)
+    response = await conv.get_response()
+    print(response.text)
+    return response.text
+
+
 @pytest.mark.asyncio
 async def test_sign_in_check(client: TelegramClient):
     # Getting information about yourself
@@ -66,21 +73,15 @@ async def test_sign_in_check(client: TelegramClient):
 
         if m:
             # Erase log
-            await conv.send_message("/로그삭제")
-            response = await conv.get_response()
-            print(response.text)
+            reply = await get_reply_of_message_in_conv("/로그삭제", conv)
 
             sleep(sleep_time)
 
-            await conv.send_message(str(log_id))
-            response = await conv.get_response()
-            print(response.text)
+            reply = await get_reply_of_message_in_conv(str(log_id), conv)
 
             sleep(sleep_time)
 
-            await conv.send_message("YES")
-            response = await conv.get_response()
-            print(response.text)
+            reply = await get_reply_of_message_in_conv("YES", conv)
 
     await client.disconnect()
     await client.disconnected
@@ -110,25 +111,19 @@ async def test_sign_in_first(client: TelegramClient):
         sleep(sleep_time)
 
         # reply sub-category
-        await conv.send_message("Office")
-        response = await conv.get_response()
-        print(response.text)
-        assert "I see" in response.text
+        reply = await get_reply_of_message_in_conv("Office", conv)
+        assert "I see" in reply
 
         sleep(sleep_time)
 
         # reply location
-        await conv.send_message("DEROUTE")
-        response = await conv.get_response()
-        print(response.text)
-        assert "You have signed in as below. Do you want to confirm" in response.text
+        reply = await get_reply_of_message_in_conv("DEROUTE", conv)
+        assert "You have signed in as below. Do you want to confirm" in reply
 
         sleep(sleep_time)
 
-        await conv.send_message("Confirm")
-        response = await conv.get_response()
-        print(response.text)
-        assert "Confirmed" in response.text
+        reply = await get_reply_of_message_in_conv("Confirm", conv)
+        assert "Confirmed" in reply
 
     await client.disconnect()
     await client.disconnected
@@ -159,19 +154,16 @@ async def test_sign_in_rewrite(client: TelegramClient):
     async with client.conversation(bot_id) as conv:
 
         # response
-        await conv.send_message("Delete and Sign In Again")
-        response = await conv.get_response()
-        print(response.text)
-        assert "Do you really want to do remove log No." in response.text
+        reply = await get_reply_of_message_in_conv("Delete and Sign In Again", conv)
+        assert "Do you really want to do remove log No." in reply
 
         sleep(sleep_time)
 
         # check confirmation
-        await conv.send_message("REMOVE SIGN IN LOG")
-        response = await conv.get_response()
-        print(response.text)
-        assert "Log No." in response.text
-        assert "has been Deleted" in response.text
+        reply = await get_reply_of_message_in_conv("REMOVE SIGN IN LOG", conv)
+
+        assert "Log No." in reply
+        assert "has been Deleted" in reply
 
         sleep(sleep_time)
 
@@ -182,43 +174,30 @@ async def test_sign_in_rewrite(client: TelegramClient):
         sleep(sleep_time)
 
         # check confirmation
-        await conv.send_message("Office")
-        response = await conv.get_response()
-        print(response.text)
-        assert "I see! Please send me your location by click" in response.text
+        reply = await get_reply_of_message_in_conv("Office", conv)
+        assert "I see! Please send me your location by click" in reply
 
         sleep(sleep_time)
 
         # get location
-        await conv.send_message("DEROUTE")
-        response = await conv.get_response()
-        print(response.text)
-        assert "You have signed in as below" in response.text
-
+        reply = await get_reply_of_message_in_conv("DEROUTE", conv)
+        assert "You have signed in as below" in reply
         sleep(sleep_time)
 
-        log_id = re.search(r"Log No.(\d+)", response.text).group(1)
+        log_id = re.search(r"Log No.(\d+)", reply).group(1)
         print(log_id)
-        await conv.send_message("Confirm")
-        response = await conv.get_response()
-        print(response.text)
+
+        reply = await get_reply_of_message_in_conv("Confirm", conv)
 
         sleep(sleep_time)
 
         # Erase log
-        await conv.send_message("/로그삭제")
-        response = await conv.get_response()
-        print(response.text)
-        await conv.send_message(str(log_id))
-        response = await conv.get_response()
-        print(response.text)
-        await conv.send_message("YES")
-        response = await conv.get_response()
-        print(response.text)
+        reply = await get_reply_of_message_in_conv("/로그삭제", conv)
+        reply = await get_reply_of_message_in_conv(str(log_id), conv)
+        reply = await get_reply_of_message_in_conv("YES", conv)
 
     await client.disconnect()
     await client.disconnected
-
 
 
 @pytest.mark.asyncio
@@ -245,49 +224,35 @@ async def test_sign_in_edit(client: TelegramClient):
         sleep(sleep_time)
 
         # reply sub-category
-        await conv.send_message("Office")
-        response = await conv.get_response()
-        print(response.text)
-        assert "I see" in response.text
+        reply = await get_reply_of_message_in_conv("Office", conv)
+        assert "I see" in reply
 
         sleep(sleep_time)
 
         # reply location
-        await conv.send_message("DEROUTE")
-        response = await conv.get_response()
-        print(response.text)
-        assert "You have signed in as below. Do you want to confirm" in response.text
+        reply = await get_reply_of_message_in_conv("DEROUTE", conv)
+        assert "You have signed in as below. Do you want to confirm" in reply
 
         sleep(sleep_time)
 
         # Edit
-        await conv.send_message("Edit")
-        response = await conv.get_response()
-        print(response.text)
-
+        reply = await get_reply_of_message_in_conv("Edit", conv)
 
         # reply sub-category
-        await conv.send_message("Office")
-        response = await conv.get_response()
-        print(response.text)
-        assert "I see" in response.text
+        reply = await get_reply_of_message_in_conv("Office", conv)
+        assert "I see" in reply
 
         sleep(sleep_time)
 
         # reply location
-        await conv.send_message("DEROUTE")
-        response = await conv.get_response()
-        print(response.text)
-        assert "You have signed in as below. Do you want to confirm" in response.text
+        reply = await get_reply_of_message_in_conv("DEROUTE", conv)
+        assert "You have signed in as below. Do you want to confirm" in reply
 
         sleep(sleep_time)
 
         # Confirmed
-        await conv.send_message("Confirm")
-        response = await conv.get_response()
-        print(response.text)
-        assert "Confirmed" in response.text
-
+        reply = await get_reply_of_message_in_conv("Confirm", conv)
+        assert "Confirmed" in reply
 
     await client.disconnect()
     await client.disconnected
