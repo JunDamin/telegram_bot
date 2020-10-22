@@ -39,8 +39,8 @@ async def erase_log(chat_id, log_id, client: TelegramClient):
     await get_reply_of_message_of_id(chat_id, "YES", client)
 
 
-async def check_assert_follow_conversation(qna: list, conv: TelegramClient.conversation):
-    
+async def check_assert_with_qna(qna: list, conv: TelegramClient.conversation):
+
     for q, a in qna:
         reply = await get_reply_of_message_in_conv(q, conv)
         assert a in reply

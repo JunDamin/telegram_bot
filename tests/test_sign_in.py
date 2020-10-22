@@ -8,9 +8,8 @@ from telethon import TelegramClient
 from telethon.sessions import StringSession
 from common_parts import (
     get_reply_of_message_of_id,
-    get_reply_of_message_in_conv,
     erase_log,
-    check_assert_follow_conversation,
+    check_assert_with_qna,
 )
 
 # Remember to use your own values from my.telegram.org!
@@ -80,6 +79,7 @@ async def test_sign_in_first(client: TelegramClient):
     m = re.search(r"Log No.(\d+)", message.text)
     if m:
         log_id = m.group(1)
+        print(log_id)
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
 
@@ -91,7 +91,7 @@ async def test_sign_in_first(client: TelegramClient):
             ("Confirm", "Confirmed"),
         ]
 
-        await check_assert_follow_conversation(qna, conv)
+        await check_assert_with_qna(qna, conv)
 
     await client.disconnect()
     await client.disconnected
@@ -122,7 +122,7 @@ async def test_sign_in_rewrite(client: TelegramClient):
             ("REMOVE SIGN IN LOG", "has been Deleted"),
         ]
 
-        await check_assert_follow_conversation(qna, conv)
+        await check_assert_with_qna(qna, conv)
 
         response = await conv.get_response()
         print(response.text)
@@ -134,7 +134,7 @@ async def test_sign_in_rewrite(client: TelegramClient):
             ("Confirm", "Confirmed"),
         ]
 
-        await check_assert_follow_conversation(qna, conv)
+        await check_assert_with_qna(qna, conv)
 
     # earase log after use
     await erase_log(bot_id, str(log_id), client)
@@ -167,10 +167,10 @@ async def test_sign_in_edit(client: TelegramClient):
             ("Edit", "Would you like to share where you work"),
             ("Office", "I see"),
             ("DEROUTE", "You have signed in as below. Do you want to confirm"),
-            ("Confirm", "Confirmed")
+            ("Confirm", "Confirmed"),
         ]
 
-        await check_assert_follow_conversation(qna, conv)
+        await check_assert_with_qna(qna, conv)
 
         # earase log after use
         if m:
