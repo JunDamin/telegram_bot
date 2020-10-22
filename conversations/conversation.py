@@ -54,6 +54,7 @@ sign_in_conv = ConversationHandler(
     },
     fallbacks=[MessageHandler(Filters.regex("^SKIP$"), cancel)],
     map_to_parent={},
+    allow_reentry=True
 )
 
 
@@ -102,6 +103,7 @@ get_back_conv = ConversationHandler(
     },
     fallbacks=[],
     map_to_parent={},
+    allow_reentry=True
 )
 
 
@@ -169,6 +171,7 @@ sign_out_conv = ConversationHandler(
     },
     fallbacks=[],
     map_to_parent={},
+    allow_reentry=True
 )
 
 
@@ -193,6 +196,7 @@ set_remarks_conv = ConversationHandler(
     },
     fallbacks=[],
     map_to_parent={},
+    allow_reentry=True
 )
 
 
@@ -219,6 +223,7 @@ remove_log_conv = ConversationHandler(
     },
     fallbacks=[],
     map_to_parent={},
+    allow_reentry=True
 )
 
 

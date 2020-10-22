@@ -21,12 +21,20 @@ bot_id = "@KOICA_test_bot"
 sleep_time = 0.5
 
 
-async def get_reply_of_message_in_conv(message: str, conv):
+async def get_reply_of_message_in_conv(message: str, conv: TelegramClient.conversation):
     await conv.send_message(message)
     response = await conv.get_response()
     print(response.text)
     sleep(sleep_time)
     return response.text
+
+
+async def get_reply_of_message_of_id(id, message: str, client: TelegramClient):
+    await client.send_message(id, message)
+    (message,) = await client.get_messages(id)
+    print(message.text)
+    sleep(sleep_time)
+    return message.text
 
 
 @pytest.mark.asyncio
@@ -52,18 +60,11 @@ async def test_sign_in_check(client: TelegramClient):
         print(dialog.name, "has ID", dialog.id)
 
     # ...Sign In Test
-    await client.send_message(bot_id, "SKIP")
-    messages = await client.get_messages(bot_id)
-    for message in messages:
-        print(message.text)
-
-    await client.send_message(chat_room_id, "sign in")
-    messages = await client.get_messages(chat_room_id)
-    for message in messages:
-        print(message.text)
-    sleep(sleep_time)
+    await get_reply_of_message_of_id(bot_id, "SKIP", client)
+    await get_reply_of_message_of_id(chat_room_id, "sign in", client)
 
     messages = await client.get_messages(bot_id)
+
     for message in messages:
         print(message.text)
         m = re.search(r"Log No.(\d+)", message.text)
@@ -74,11 +75,9 @@ async def test_sign_in_check(client: TelegramClient):
 
         if m:
             # Erase log
-            reply = await get_reply_of_message_in_conv("/로그삭제", conv)
-
-            reply = await get_reply_of_message_in_conv(str(log_id), conv)
-
-            reply = await get_reply_of_message_in_conv("YES", conv)
+            await get_reply_of_message_in_conv("/로그삭제", conv)
+            await get_reply_of_message_in_conv(str(log_id), conv)
+            await get_reply_of_message_in_conv("YES", conv)
 
     await client.disconnect()
     await client.disconnected
@@ -91,16 +90,10 @@ async def test_sign_in_first(client: TelegramClient):
     _ = await client.connect()
 
     # ...Sign In Test
-    await client.send_message(chat_room_id, "sign in")
-    messages = await client.get_messages(chat_room_id)
-    for message in messages:
-        print(message.text)
+    await get_reply_of_message_of_id(chat_room_id, "sign in", client)
 
-    sleep(sleep_time)
-
-    messages = await client.get_messages(bot_id)
-    for message in messages:
-        print(message.text)
+    (message,) = await client.get_messages(bot_id)
+    print(message.text)
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
@@ -130,16 +123,10 @@ async def test_sign_in_rewrite(client: TelegramClient):
     _ = await client.connect()
 
     # ...Sign In Test
-    await client.send_message(chat_room_id, "sign in")
-    messages = await client.get_messages(chat_room_id)
-    for message in messages:
-        print(message.text)
+    await get_reply_of_message_of_id(chat_room_id, "sign in", client)
 
-    sleep(sleep_time)
-
-    messages = await client.get_messages(bot_id)
-    for message in messages:
-        print(message.text)
+    (message,) = await client.get_messages(bot_id)
+    print(message.text)
 
     sleep(sleep_time)
 
@@ -155,17 +142,13 @@ async def test_sign_in_rewrite(client: TelegramClient):
         assert "Log No." in reply
         assert "has been Deleted" in reply
 
-
         response = await conv.get_response()
         print(response.text)
         assert "Would you like to share where you work" in response.text
 
-
-
         # check confirmation
         reply = await get_reply_of_message_in_conv("Office", conv)
         assert "I see! Please send me your location by click" in reply
-
 
         # get location
         reply = await get_reply_of_message_in_conv("DEROUTE", conv)
@@ -175,7 +158,6 @@ async def test_sign_in_rewrite(client: TelegramClient):
         print(log_id)
 
         reply = await get_reply_of_message_in_conv("Confirm", conv)
-
 
         # Erase log
         reply = await get_reply_of_message_in_conv("/로그삭제", conv)
@@ -193,19 +175,13 @@ async def test_sign_in_edit(client: TelegramClient):
     _ = await client.connect()
 
     # ...Sign In Test
-    await client.send_message(chat_room_id, "sign in")
-    messages = await client.get_messages(chat_room_id)
-    for message in messages:
-        print(message.text)
+    await get_reply_of_message_of_id(chat_room_id, "sign in", client)
 
-
-    messages = await client.get_messages(bot_id)
-    for message in messages:
-        print(message.text)
+    (message,) = await client.get_messages(bot_id)
+    print(message.text)
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
-
 
         # reply sub-category
         reply = await get_reply_of_message_in_conv("Office", conv)
