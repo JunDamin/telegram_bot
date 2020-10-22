@@ -6,6 +6,12 @@ from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
 from telethon import TelegramClient
 from telethon.sessions import StringSession
+from common_parts import (
+    get_reply_of_message_of_id,
+    get_reply_of_message_in_conv,
+    erase_log,
+    check_assert_follow_conversation,
+)
 
 # Remember to use your own values from my.telegram.org!
 load_dotenv()
@@ -16,25 +22,11 @@ load_dotenv(dotenv_path=env_path)
 api_id = int(os.environ["APP_ID"])
 api_hash = os.environ["APP_HASH"]
 session_str = os.environ["SESSION"]
+
+# constant variable
 chat_room_id = -444903176
 bot_id = "@KOICA_test_bot"
 sleep_time = 0.5
-
-
-async def get_reply_of_message_in_conv(message: str, conv: TelegramClient.conversation):
-    await conv.send_message(message)
-    response = await conv.get_response()
-    print(response.text)
-    sleep(sleep_time)
-    return response.text
-
-
-async def get_reply_of_message_of_id(id, message: str, client: TelegramClient):
-    await client.send_message(id, message)
-    (message,) = await client.get_messages(id)
-    print(message.text)
-    sleep(sleep_time)
-    return message.text
 
 
 @pytest.mark.asyncio
@@ -63,21 +55,12 @@ async def test_sign_in_check(client: TelegramClient):
     await get_reply_of_message_of_id(bot_id, "SKIP", client)
     await get_reply_of_message_of_id(chat_room_id, "sign in", client)
 
-    messages = await client.get_messages(bot_id)
-
-    for message in messages:
-        print(message.text)
-        m = re.search(r"Log No.(\d+)", message.text)
-        if m:
-            log_id = m.group(1)
-    # Signing in conversation
-    async with client.conversation(bot_id) as conv:
-
-        if m:
-            # Erase log
-            await get_reply_of_message_in_conv("/로그삭제", conv)
-            await get_reply_of_message_in_conv(str(log_id), conv)
-            await get_reply_of_message_in_conv("YES", conv)
+    (message,) = await client.get_messages(bot_id)
+    print(message.text)
+    m = re.search(r"Log No.(\d+)", message.text)
+    if m:
+        log_id = m.group(1)
+        await erase_log(bot_id, str(log_id), client)
 
     await client.disconnect()
     await client.disconnected
@@ -94,22 +77,21 @@ async def test_sign_in_first(client: TelegramClient):
 
     (message,) = await client.get_messages(bot_id)
     print(message.text)
-
+    m = re.search(r"Log No.(\d+)", message.text)
+    if m:
+        log_id = m.group(1)
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
 
         sleep(sleep_time)
 
-        # reply sub-category
-        reply = await get_reply_of_message_in_conv("Office", conv)
-        assert "I see" in reply
+        qna = [
+            ("Office", "I see"),
+            ("DEROUTE", "You have signed in as below. Do you want to confirm"),
+            ("Confirm", "Confirmed"),
+        ]
 
-        # reply location
-        reply = await get_reply_of_message_in_conv("DEROUTE", conv)
-        assert "You have signed in as below. Do you want to confirm" in reply
-
-        reply = await get_reply_of_message_in_conv("Confirm", conv)
-        assert "Confirmed" in reply
+        await check_assert_follow_conversation(qna, conv)
 
     await client.disconnect()
     await client.disconnected
@@ -127,42 +109,35 @@ async def test_sign_in_rewrite(client: TelegramClient):
 
     (message,) = await client.get_messages(bot_id)
     print(message.text)
-
+    m = re.search(r"Log No.(\d+)", message.text)
+    if m:
+        log_id = m.group(1)
     sleep(sleep_time)
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
 
-        # response
-        reply = await get_reply_of_message_in_conv("Delete and Sign In Again", conv)
-        assert "Do you really want to do remove log No." in reply
+        qna = [
+            ("Delete and Sign In Again", "Do you really want to do remove log No."),
+            ("REMOVE SIGN IN LOG", "has been Deleted"),
+        ]
 
-        # check confirmation
-        reply = await get_reply_of_message_in_conv("REMOVE SIGN IN LOG", conv)
-        assert "Log No." in reply
-        assert "has been Deleted" in reply
+        await check_assert_follow_conversation(qna, conv)
 
         response = await conv.get_response()
         print(response.text)
         assert "Would you like to share where you work" in response.text
 
-        # check confirmation
-        reply = await get_reply_of_message_in_conv("Office", conv)
-        assert "I see! Please send me your location by click" in reply
+        qna = [
+            ("Office", "I see"),
+            ("DEROUTE", "You have signed in as below. Do you want to confirm"),
+            ("Confirm", "Confirmed"),
+        ]
 
-        # get location
-        reply = await get_reply_of_message_in_conv("DEROUTE", conv)
-        assert "You have signed in as below" in reply
+        await check_assert_follow_conversation(qna, conv)
 
-        log_id = re.search(r"Log No.(\d+)", reply).group(1)
-        print(log_id)
-
-        reply = await get_reply_of_message_in_conv("Confirm", conv)
-
-        # Erase log
-        reply = await get_reply_of_message_in_conv("/로그삭제", conv)
-        reply = await get_reply_of_message_in_conv(str(log_id), conv)
-        reply = await get_reply_of_message_in_conv("YES", conv)
+    # earase log after use
+    await erase_log(bot_id, str(log_id), client)
 
     await client.disconnect()
     await client.disconnected
@@ -179,32 +154,27 @@ async def test_sign_in_edit(client: TelegramClient):
 
     (message,) = await client.get_messages(bot_id)
     print(message.text)
+    m = re.search(r"Log No.(\d+)", message.text)
+    if m:
+        log_id = m.group(1)
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
 
-        # reply sub-category
-        reply = await get_reply_of_message_in_conv("Office", conv)
-        assert "I see" in reply
+        qna = [
+            ("Office", "I see"),
+            ("DEROUTE", "You have signed in as below. Do you want to confirm"),
+            ("Edit", "Would you like to share where you work"),
+            ("Office", "I see"),
+            ("DEROUTE", "You have signed in as below. Do you want to confirm"),
+            ("Confirm", "Confirmed")
+        ]
 
-        # reply location
-        reply = await get_reply_of_message_in_conv("DEROUTE", conv)
-        assert "You have signed in as below. Do you want to confirm" in reply
+        await check_assert_follow_conversation(qna, conv)
 
-        # Edit
-        reply = await get_reply_of_message_in_conv("Edit", conv)
-
-        # reply sub-category
-        reply = await get_reply_of_message_in_conv("Office", conv)
-        assert "I see" in reply
-
-        # reply location
-        reply = await get_reply_of_message_in_conv("DEROUTE", conv)
-        assert "You have signed in as below. Do you want to confirm" in reply
-
-        # Confirmed
-        reply = await get_reply_of_message_in_conv("Confirm", conv)
-        assert "Confirmed" in reply
+        # earase log after use
+        if m:
+            await erase_log(bot_id, str(log_id), client)
 
     await client.disconnect()
     await client.disconnected
