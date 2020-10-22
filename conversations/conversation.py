@@ -95,7 +95,12 @@ get_back_conv = ConversationHandler(
         get_back.ANSWER_LUNCH_LOCATION: [
             MessageHandler(
                 Filters.location & Filters.private, get_back.set_lunch_location_and_ask_confirmation
-            )
+            ),
+            MessageHandler(
+                Filters.regex("^DEROUTE$")
+                & Filters.private,
+                get_back.set_lunch_location_and_ask_confirmation,
+            ),
         ],
         get_back.ANSWER_CONFIRMATION: [
             MessageHandler(Filters.regex("^Confirm$|^Edit$"), get_back.confirm_the_data)
@@ -163,7 +168,12 @@ sign_out_conv = ConversationHandler(
         sign_out.ANSWER_SIGN_OUT_LOCATION: [
             MessageHandler(
                 Filters.location & Filters.private, sign_out.set_sign_out_location
-            )
+            ),
+            MessageHandler(
+                Filters.regex("^DEROUTE$")
+                & Filters.private,
+                sign_out.set_sign_out_location,
+            ),
         ],
         sign_out.ANSWER_CONFIRMATION: [
             MessageHandler(Filters.regex("^Confirm$|^Edit$"), sign_out.confirm_the_data)

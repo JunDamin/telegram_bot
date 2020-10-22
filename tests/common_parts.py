@@ -43,5 +43,5 @@ async def check_assert_with_qna(qna: list, conv: TelegramClient.conversation):
 
     for q, a in qna:
         reply = await get_reply_of_message_in_conv(q, conv)
-        assert a in reply
         print(f"q: {q}, reply: {reply}, a: {a}")
+        assert a in reply

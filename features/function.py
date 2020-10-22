@@ -262,5 +262,6 @@ def delete_content(update, context):
     log_id = context.user_data.get("log_id")
     conn = create_connection()
     work_content_id = select_record(conn, "logbook", ["work_content_id"], {"id": log_id})[0][0]
+    update_record(conn, "logbook", {"work_content_id": ""}, log_id)
     delete_record(conn, "contents", {"id": work_content_id})
     return log_id

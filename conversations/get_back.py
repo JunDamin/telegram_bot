@@ -182,6 +182,11 @@ def set_lunch_type_and_ask_lunch_location(update, context):
 
 @log_info()
 def set_lunch_location_and_ask_confirmation(update, context):
+    if update.message.text == "DEROUTE":
+        update.message.location = lambda x : None
+        setattr(update.message.location, "longitude", 1)
+        setattr(update.message.location, "latitude", 1)
+        print('DEROUTED')
     user_data = context.user_data
     HEADER_MESSAGE = "You have gotten back as below. Do you want to confirm?"
     if set_location(update, context):

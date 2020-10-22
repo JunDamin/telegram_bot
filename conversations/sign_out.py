@@ -169,6 +169,11 @@ def ask_sign_out_location(update, text):
 
 @log_info()
 def set_sign_out_location(update, context):
+    if update.message.text == "DEROUTE":
+        update.message.location = lambda x : None
+        setattr(update.message.location, "longitude", 1)
+        setattr(update.message.location, "latitude", 1)
+        print('DEROUTED')
     user_data = context.user_data
     HEADER_MESSAGE = "You have signed out as below. Do you want to confirm?"
     if set_location(update, context):
@@ -211,7 +216,7 @@ def ask_work_type(update, context):
 @log_info()
 def ask_work_content(update, context):
     update.message.reply_text(
-        "OK. Please text me what you have done todya for work briefly.", reply_markup=ReplyKeyboardRemove()
+        "OK. Please text me what you have done today for work briefly.", reply_markup=ReplyKeyboardRemove()
     )
     return ANSWER_WORK_CONTENT
 
