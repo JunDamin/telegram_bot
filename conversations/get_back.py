@@ -1,5 +1,5 @@
 import pytz
-from telegram import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from telegram import KeyboardButton
 from telegram.error import Unauthorized
 from telegram.ext import ConversationHandler
 from features.log import log_info
@@ -12,6 +12,8 @@ from features.function import (
     set_location,
     select_log,
     confirm_record,
+    reply_markdown,
+    send_markdown,
 )
 from features.data_management import (
     create_connection,
@@ -45,7 +47,7 @@ Welcome back. You have been logged with Log No. {log_id}"""
         # check if the chat is group or not
         if update.message.chat.type == "group":
             text_message = f"{SIGN_IN_GREETING}\n{CHECK_DM}\n{SIGN_TIME}"
-            update.message.reply_text(text=text_message)
+            reply_markdown(update, context, text_message)
 
         # set status
         context.user_data["log_id"] = log_id
@@ -57,18 +59,13 @@ Welcome back. You have been logged with Log No. {log_id}"""
             reply_keyboard = [
                 ["Without any member of KOICA", "With KOICA Colleagues"],
             ]
-            context.bot.send_message(
-                chat_id=user.id,
-                text=text_message,
-                reply_markup=ReplyKeyboardMarkup(
-                    reply_keyboard, one_time_keyboard=True
-                ),
-            )
+            send_markdown(update, context, user.id, text_message, reply_keyboard)
 
         except Unauthorized:
-            update.effective_message.reply_text(
+            text_message = (
                 "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
             )
+            reply_markdown(update, context, text_message)
 
         return ANSWER_LUNCH_TYPE
     else:
@@ -79,22 +76,17 @@ Welcome back. You have been logged with Log No. {log_id}"""
         try:
             message = "You have already reported in as below. "
             text_message = make_text_from_logbook(rows, message)
-
-            update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+            reply_markdown(update, context, text_message)
 
             text_message += "\nDo you want to delete it and register again? or SKIP it?"
             reply_keyboard = [
                 ["Delete and Get Back to Work Again", "SKIP"],
             ]
-            context.bot.send_message(
-                chat_id=user.id,
-                text=text_message,
-                reply_markup=ReplyKeyboardMarkup(
-                    reply_keyboard, one_time_keyboard=True
-                ),
-            )
+            send_markdown(update, context, user.id, text_message, reply_keyboard)
+
         except Unauthorized:
-            update.effective_message.reply_text(
+            reply_markdown(update, context, text_message)
+            text_message = (
                 "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
             )
 
@@ -104,7 +96,6 @@ def ask_confirmation_of_removal(update, context):
     log_id = context.user_data.get("log_id")
     if log_id:
         context.user_data["remove_log_id"] = log_id
-        keyboard = [["REMOVE GET BACK LOG", "NO"]]
 
         conn = create_connection()
         row = select_log(conn, log_id)
@@ -112,15 +103,13 @@ def ask_confirmation_of_removal(update, context):
 
         header_message = f"Do you really want to do remove log No.{log_id}?\n"
         text_message = make_text_from_logbook(row, header_message)
+        keyboard = [["REMOVE GET BACK LOG", "NO"]]
 
-        update.message.reply_text(
-            text_message,
-            reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
-        )
+        reply_markdown(update, context, text_message, keyboard)
         return ANSWER_LOG_DELETE
     else:
         text_message = "An Error has been made. Please try again."
-        update.message.reply_text(text=text_message, reply_markup=ReplyKeyboardRemove())
+        reply_markdown(update, context, text_message)
         return ConversationHandler.END
 
 
@@ -136,10 +125,12 @@ def override_log_and_ask_lunch_type(update, context):
         conn.close()
 
         text_message = f"Log No. {log_id} has been Deleted\n"
-        update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+        reply_markdown(update, context, text_message)
+
     else:
         text_message = "process has been stoped. The log has not been deleted."
-        update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+        reply_markdown(update, context, text_message)
+
         return ConversationHandler.END
 
     log_id = set_basic_user_data(update, context, "signing out")
@@ -150,13 +141,10 @@ def override_log_and_ask_lunch_type(update, context):
 @log_info()
 def ask_lunch_type(update, context):
     text_message = "Did you have lunch with KOICA Colleauges?"
-    reply_keyboard = [
+    keyboard = [
         ["Without any member of KOICA", "With KOICA Colleagues"],
     ]
-    update.message.reply_text(
-        text=text_message,
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
-    )
+    reply_markdown(update, context, text_message, keyboard)
     return ANSWER_LUNCH_TYPE
 
 
@@ -165,38 +153,32 @@ def set_lunch_type_and_ask_lunch_location(update, context):
     """  """
     # save log work type data
     update_sub_category(context.user_data["log_id"], update.message.text)
-
+    text_message = """I see! Please send me your location by click the button on your phone.
+(Desktop app can not send location)"""
     keyboard = [
         [
             KeyboardButton("Share Location", request_location=True),
         ],
     ]
-
-    update.message.reply_text(
-        """I see! Please send me your location by click the button on your phone.
-(Desktop app can not send location)""",
-        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
-    )
+    reply_markdown(update, context, text_message, keyboard)
     return ANSWER_LUNCH_LOCATION
 
 
 @log_info()
 def set_lunch_location_and_ask_confirmation(update, context):
     if update.message.text == "DEROUTE":
-        update.message.location = lambda x : None
+        update.message.location = lambda x: None
         setattr(update.message.location, "longitude", 1)
         setattr(update.message.location, "latitude", 1)
-        print('DEROUTED')
+        print("DEROUTED")
     user_data = context.user_data
     HEADER_MESSAGE = "You have gotten back as below. Do you want to confirm?"
     if set_location(update, context):
         text_message = HEADER_MESSAGE
-        keyboard = ReplyKeyboardMarkup([["Confirm", "Edit"]], one_time_keyboard=True)
         text_message += select_log_to_text(user_data.get("log_id"))
-        update.message.reply_text(
-            text_message,
-            reply_markup=keyboard,
-        )
+        keyboard = [["Confirm", "Edit"]]
+        reply_markdown(update, context, text_message, keyboard)
+
         return ANSWER_CONFIRMATION
     else:
         return ConversationHandler.END
@@ -208,7 +190,9 @@ def confirm_the_data(update, context):
     if answer:
         confirm_record(update, context)
         context.user_data.clear()
-        update.message.reply_text("Confirmed", reply_markup=ReplyKeyboardRemove())
+        text_message = "Confirmed"
+        reply_markdown(update, context, text_message)
+
         return ConversationHandler.END
     else:
         return ask_lunch_type(update, context)

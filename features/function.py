@@ -1,4 +1,6 @@
 import pytz
+from datetime import datetime, date, timedelta
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, ParseMode
 from features.data_management import (
     create_connection,
     update_log_category,
@@ -14,8 +16,6 @@ from features.data_management import (
     select_record,
     delete_record,
 )
-from datetime import datetime, date, timedelta
-from telegram import ReplyKeyboardRemove
 
 
 def check_status(context, status):
@@ -141,7 +141,7 @@ def make_text_from_logbook(rows, header=""):
     ) in rows:
         if chat_id != _:
             chat_id = _
-            text_message += f"\n\n{first_name} {last_name}'s log as below\n"
+            text_message += f"\n\n*_{first_name} {last_name}_'s log as below*\n"
 
         dt = datetime.fromisoformat(_datetime)
         record = f"""
@@ -250,7 +250,9 @@ def delete_log_and_content(update, context):
 
     log_id = context.user_data.get("log_id")
     conn = create_connection()
-    work_content_id = select_record(conn, "logbook", ["work_content_id"], {"id": log_id})[0][0]
+    work_content_id = select_record(
+        conn, "logbook", ["work_content_id"], {"id": log_id}
+    )[0][0]
     delete_record(conn, "contents", {"id": work_content_id})
     delete_record(conn, "logbook", {"id": log_id})
 
@@ -261,7 +263,52 @@ def delete_content(update, context):
 
     log_id = context.user_data.get("log_id")
     conn = create_connection()
-    work_content_id = select_record(conn, "logbook", ["work_content_id"], {"id": log_id})[0][0]
+    work_content_id = select_record(
+        conn, "logbook", ["work_content_id"], {"id": log_id}
+    )[0][0]
     update_record(conn, "logbook", {"work_content_id": ""}, log_id)
     delete_record(conn, "contents", {"id": work_content_id})
     return log_id
+
+
+def send_markdown(update, context, user_id, text_message, reply_keyboard):
+
+    text_message = text_message.replace(".", "\\.")
+    text_message = text_message.replace("-", "\\-")
+
+    context.bot.send_message(
+        chat_id=user_id,
+        text=text_message,
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+        if reply_keyboard
+        else ReplyKeyboardRemove(),
+        parse_mode=ParseMode.MARKDOWN_V2,
+    )
+
+
+def reply_markdown(update, context, text_message, reply_keyboard=False):
+
+    text_message = convert_text_to_md(text_message)
+
+    update.message.reply_markdown_v2(
+        text=text_message,
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+        if reply_keyboard
+        else ReplyKeyboardRemove(),
+        parse_mode=ParseMode.MARKDOWN_V2,
+    )
+
+
+def convert_text_to_md(text):
+    convert_dict = {
+        ".": "\\.",
+        "-": "\\-",
+        "!": "\\!",
+        "(": "\\(",
+        ")": "\\)",
+        "+": "\\+",
+    }
+    for key in convert_dict:
+        text = text.replace(key, convert_dict[key])
+
+    return text

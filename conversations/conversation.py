@@ -106,7 +106,7 @@ get_back_conv = ConversationHandler(
             MessageHandler(Filters.regex("^Confirm$|^Edit$"), get_back.confirm_the_data)
         ],
     },
-    fallbacks=[],
+    fallbacks=[MessageHandler(Filters.regex("^SKIP$"), cancel)],
     map_to_parent={},
     allow_reentry=True
 )
@@ -179,7 +179,7 @@ sign_out_conv = ConversationHandler(
             MessageHandler(Filters.regex("^Confirm$|^Edit$"), sign_out.confirm_the_data)
         ],
     },
-    fallbacks=[],
+    fallbacks=[MessageHandler(Filters.regex("^SKIP$"), cancel)],
     map_to_parent={},
     allow_reentry=True
 )
@@ -204,7 +204,7 @@ set_remarks_conv = ConversationHandler(
             MessageHandler(Filters.text & Filters.private, set_remarks.set_remarks),
         ],
     },
-    fallbacks=[],
+    fallbacks=[MessageHandler(Filters.regex("^SKIP$"), cancel)],
     map_to_parent={},
     allow_reentry=True
 )
@@ -231,7 +231,7 @@ remove_log_conv = ConversationHandler(
             ),
         ],
     },
-    fallbacks=[],
+    fallbacks=[MessageHandler(Filters.regex("^SKIP$"), cancel)],
     map_to_parent={},
     allow_reentry=True
 )

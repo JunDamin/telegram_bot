@@ -21,7 +21,35 @@ from features.function import (
 @log_info()
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text("Hi!")
+    update.message.reply_markdown_v2(
+        """*bold \*text*
+_italic \*text_
+__underline__
+~strikethrough~
+*bold _italic bold ~italic bold strikethrough~ __underline italic bold___ bold*
+[inline URL](http://www.example.com/)
+[inline mention of a user](tg://user?id=123456789)
+`inline fixed-width code`
+```
+pre-formatted fixed-width code block
+```
+```python
+pre-formatted fixed-width code block written in the Python programming language
+```"""
+    )
+    update.message.reply_html(
+        """<b>bold</b>, <strong>bold</strong>
+<i>italic</i>, <em>italic</em>
+<u>underline</u>, <ins>underline</ins>
+<s>strikethrough</s>, <strike>strikethrough</strike>, <del>strikethrough</del>
+<b>bold <i>italic bold <s>italic bold strikethrough</s> <u>underline italic bold</u></i> bold</b>
+<a href="http://www.example.com/">inline URL</a>
+<a href="tg://user?id=123456789">inline mention of a user</a>
+<code>inline fixed-width code</code>
+<pre>pre-formatted fixed-width code block</pre>
+<pre><code class="language-python">pre-formatted fixed-width code block written in the Python programming language</code></pre>
+"""
+    )
     context.user_data["status"] = "START"
 
 
@@ -38,25 +66,25 @@ def send_file(update, context):
     record = select_all_logs(conn)
     conn.close()
     header = [
-            "id",
-            "chat_id",
-            "first_name",
-            "last_name",
-            "datetime",
-            "category",
-            "sub_category",
-            "longitude",
-            "latitude",
-            "remarks",
-            "confirmation",
-        ]
+        "id",
+        "chat_id",
+        "first_name",
+        "last_name",
+        "datetime",
+        "category",
+        "sub_category",
+        "longitude",
+        "latitude",
+        "remarks",
+        "confirmation",
+    ]
     write_csv(record, header, "signing.csv")
     update.message.reply_document(document=open("signing.csv", "rb"))
 
 
 @log_info()
 def cancel(update, context):
-    update.message.reply_text(
+    update.message.reply_message(
         "Bye! I hope we can talk again some day.", reply_markup=ReplyKeyboardRemove()
     )
 
@@ -125,6 +153,11 @@ def get_work_content_file(update, context):
     rows = cursor.fetchall()
     conn.close()
     record = [list(map(lambda x: str(x).replace("\\n", "\n"), row)) for row in rows]
-    write_csv(record, ["id", ], "work_content.csv")
+    write_csv(
+        record,
+        [
+            "id",
+        ],
+        "work_content.csv",
+    )
     update.message.reply_document(document=open("work_content.csv", "rb"))
- 

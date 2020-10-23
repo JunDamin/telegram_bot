@@ -60,6 +60,7 @@ async def test_get_back_check(client: TelegramClient):
     if m:
         log_id = m.group(1)
         await erase_log(bot_id, str(log_id), client)
+        sleep(sleep_time)
 
     await client.disconnect()
     await client.disconnected
@@ -138,7 +139,7 @@ async def test_get_back_rewrite(client: TelegramClient):
 
     # earase log after use
     await erase_log(bot_id, str(log_id), client)
-
+    sleep(sleep_time)
     await client.disconnect()
     await client.disconnected
 

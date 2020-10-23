@@ -1,10 +1,9 @@
 from telegram.ext import ConversationHandler
 from features.data_management import (
     create_connection,
-    select_log,
-    update_remarks,
+    update_record,
 )
-from features.function import select_log_to_text, check_log_id
+from features.function import select_log_to_text, check_log_id, reply_markdown
 from features.log import log_info
 
 
@@ -14,9 +13,12 @@ HANDLE_REMARKS_LOG_ID, HANDLE_REMARKS_CONTENT = map(chr, range(7, 9))
 
 @log_info()
 def ask_log_id_for_remarks(update, context):
-    update.message.reply_text(
+
+    text_message = (
         "Which log do you want to add remarks?\nPlease send me the log number."
     )
+
+    reply_markdown(update, context, text_message)
     context.user_data["status"] = "ASK_REMARKS_CONTENT"
 
     return HANDLE_REMARKS_LOG_ID
@@ -28,13 +30,16 @@ def ask_content_for_remarks(update, context):
     try:
         if check_log_id(text):
             context.user_data["remarks_log_id"] = text
-            update.message.reply_text("What remarks? do you want to add?")
+            text_message = "What remarks? do you want to add?"
+            reply_markdown(update, context, text_message)
             return HANDLE_REMARKS_CONTENT
         else:
-            update.message.reply_text("log id is not exist. Please try again")
+            text_message = "log id is not exist. Please try again"
+            reply_markdown(update, context, text_message)
             raise ValueError
     except ValueError:
-        update.message.reply_text("Please. Send us numbers only.")
+        text_message = "Please. Send us numbers only."
+        reply_markdown(update, context, text_message)
         return HANDLE_REMARKS_LOG_ID
 
 
@@ -42,15 +47,16 @@ def ask_content_for_remarks(update, context):
 def set_remarks(update, context):
     log_id = context.user_data.get("remarks_log_id")
     content = update.message.text
+    record = {"remarks": content}
 
     conn = create_connection()
-    update_remarks(conn, log_id, content)
+    update_record(conn, "logbook", record, log_id)
     conn.close()
 
     context.user_data["log_id"] = log_id
 
     text_message = "remarks has been updated.\n"
     text_message += select_log_to_text(log_id)
-    update.message.reply_text(text_message)
+    reply_markdown(update, context, text_message)
 
     return ConversationHandler.END
