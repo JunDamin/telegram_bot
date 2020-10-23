@@ -146,7 +146,7 @@ def make_text_from_logbook(rows, header=""):
         dt = datetime.fromisoformat(_datetime)
         record = f"""
     {category} {"- " + sub_category if sub_category else ""}
-    Log No.{log_id} : {dt.strftime("%m-%d %H:%M")}
+    Log No.{log_id} : {convert_datetime_to_text(dt)}
     location : {longitude if longitude else "-"}, {latitude if latitude else "-"}
     remarks : {remarks if remarks else "-"}\n"""
         if work_content_id:
@@ -310,5 +310,11 @@ def convert_text_to_md(text):
     }
     for key in convert_dict:
         text = text.replace(key, convert_dict[key])
+
+    return text
+
+
+def convert_datetime_to_text(date: datetime):
+    text = date.strftime("%m-%d *__%H:%M__*")
 
     return text

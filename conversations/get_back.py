@@ -40,7 +40,8 @@ def get_back_to_work(update, context):
         # set message texts
         SIGN_IN_GREETING = f"""Good afternoon, {user.first_name}.\n
 Welcome back. You have been logged with Log No. {log_id}"""
-        SIGN_TIME = f"""signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}"""
+        dt = update.message.date.astimezone(pytz.timezone('Africa/Douala'))
+        SIGN_TIME = f"""signing time: {dt.strftime("%m-%d *__%H:%M__*")}"""
         ASK_INFO = """Did you have lunch with KOICA collagues?"""
         CHECK_DM = """"Please check my DM(Direct Message) to you"""
 

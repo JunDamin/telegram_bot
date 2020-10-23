@@ -15,7 +15,7 @@ async def get_reply_of_message_in_conv(message: str, conv: TelegramClient.conver
     response = await conv.get_response()
     print(response.text)
     sleep(sleep_time)
-    return response.text
+    return response.raw_text
 
 
 async def get_reply_of_message_of_id(id, message: str, client: TelegramClient):
@@ -26,17 +26,24 @@ async def get_reply_of_message_of_id(id, message: str, client: TelegramClient):
     param client: client which you want to use
     return : text message of response of the message
     """
-    await client.send_message(id, message)
-    (message,) = await client.get_messages(id)
+    message = await client.send_message(id, message)
+    message_id = message.id
+    while True:
+        (message,) = await client.get_messages(id)
+        if message_id != message.id:
+            break
+        else:
+            sleep(sleep_time)
     print(message.text)
     sleep(sleep_time)
-    return message.text
+    return message.raw_text
 
 
 async def erase_log(chat_id, log_id, client: TelegramClient):
     await get_reply_of_message_of_id(chat_id, "/로그삭제", client)
     await get_reply_of_message_of_id(chat_id, str(log_id), client)
     await get_reply_of_message_of_id(chat_id, "YES", client)
+    sleep(sleep_time)
 
 
 async def check_assert_with_qna(qna: list, conv: TelegramClient.conversation):

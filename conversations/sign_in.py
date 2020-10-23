@@ -45,7 +45,8 @@ def start_signing_in(update, context):
 
         # set text
         SIGN_IN_GREETING = f"""Good morning, `{user.first_name}`.\nYou have signed in with Log No. {log_id}"""
-        SIGN_TIME = f"""signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}"""
+        dt = update.message.date.astimezone(pytz.timezone('Africa/Douala'))
+        SIGN_TIME = f"""signing time: {dt.strftime("%m-%d *__%H:%M__*")}"""
         ASK_INFO = """Would you like to share where you work?"""
         CHECK_DM = """_Please check my DM(Direct Message) to you_"""
 

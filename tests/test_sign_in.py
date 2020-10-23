@@ -150,13 +150,13 @@ async def test_sign_in_edit(client: TelegramClient):
     _ = await client.connect()
 
     # ...Sign In Test
-    await get_reply_of_message_of_id(chat_room_id, "sign in", client)
+    reply = await get_reply_of_message_of_id(chat_room_id, "sign in", client)
+    m = re.search(r"Log No.(\d+)", reply)
+    if m:
+        log_id = m.group(1)
 
     (message,) = await client.get_messages(bot_id)
     print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
-    if m:
-        log_id = m.group(1)
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
@@ -183,5 +183,4 @@ async def test_sign_in_edit(client: TelegramClient):
 if __name__ == "__main__":
     client = TelegramClient(StringSession(session_str), api_id, api_hash)
     client.loop.run_until_complete(test_sign_in_check(client))
-    client.loop.run_until_complete(test_sign_in_first(client))
-    client.loop.run_until_complete(test_sign_in_rewrite(client))
+    client.loop.run_until_complete(test_sign_in_edit(client))

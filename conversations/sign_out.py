@@ -46,7 +46,8 @@ def start_signing_out(update, context):
         SIGN_OUT_GREETING = (
             f"""Good evening, {user.first_name}.\nYou have signed out today."""
         )
-        SIGN_TIME = f"signing time: {update.message.date.astimezone(pytz.timezone('Africa/Douala'))}"
+        dt = update.message.date.astimezone(pytz.timezone('Africa/Douala'))
+        SIGN_TIME = f"""signing time: {dt.strftime("%m-%d *__%H:%M__*")}"""
         ASK_INFO = "Would you like to share your today's content of work?"
         CHECK_DM = """"Please check my DM(Direct Message) to you"""
         text_message = f"{SIGN_OUT_GREETING}/n{SIGN_TIME}"

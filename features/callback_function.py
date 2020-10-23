@@ -12,6 +12,7 @@ from features.function import (
     make_text_from_logbook,
     get_logs_of_the_day,
     select_log_to_text,
+    reply_markdown,
 )
 
 # Define a few command handlers. These usually take the two arguments update and
@@ -103,7 +104,7 @@ def check_log(update, context):
     header_message = "Here is your recent log info.\n"
     text_message = make_text_from_logbook(rows, header_message)
 
-    update.message.reply_text(text_message)
+    reply_markdown(update, context, text_message)
 
 
 @log_info()
@@ -112,7 +113,7 @@ def get_a_log(update, context):
     if log_id:
         text_message = "You have been logged as below.\n"
         text_message += select_log_to_text(log_id)
-        update.message.reply_text(text_message)
+        reply_markdown(update, context, text_message)
 
     else:
         update.message.reply_text("please send me a log id first.")
@@ -122,14 +123,14 @@ def get_a_log(update, context):
 def get_logs_today(update, context):
     """ """
     text_message = get_logs_of_today()
-    update.message.reply_text(text_message)
+    reply_markdown(update, context, text_message)
 
 
 @log_info()
 def ask_date_for_log(update, context):
 
     text_message = "Please send the date as YYYY-MM-DD format"
-    update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+    reply_markdown(update, context, text_message)
     context.user_data["status"] = "DATE_FOR_LOG"
 
 
@@ -139,7 +140,7 @@ def reply_logs_of_the_date(update, context):
 
     try:
         text_message = get_logs_of_the_day(date.fromisoformat(the_date))
-        update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+        reply_markdown(update, context, text_message)
         return True
     except ValueError:
         return False

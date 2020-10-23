@@ -60,7 +60,6 @@ async def test_get_back_check(client: TelegramClient):
     if m:
         log_id = m.group(1)
         await erase_log(bot_id, str(log_id), client)
-        sleep(sleep_time)
 
     await client.disconnect()
     await client.disconnected
@@ -139,7 +138,6 @@ async def test_get_back_rewrite(client: TelegramClient):
 
     # earase log after use
     await erase_log(bot_id, str(log_id), client)
-    sleep(sleep_time)
     await client.disconnect()
     await client.disconnected
 
@@ -151,13 +149,13 @@ async def test_get_back_edit(client: TelegramClient):
     _ = await client.connect()
 
     # ...Get back Test
-    await get_reply_of_message_of_id(chat_room_id, "back to work", client)
+    reply = await get_reply_of_message_of_id(chat_room_id, "back to work", client)
+    m = re.search(r"Log No.(\d+)", reply)
+    if m:
+        log_id = m.group(1)
 
     (message,) = await client.get_messages(bot_id)
     print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
-    if m:
-        log_id = m.group(1)
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:

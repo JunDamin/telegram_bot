@@ -72,14 +72,14 @@ async def test_sign_out_first(client: TelegramClient):
     _ = await client.connect()
 
     # ...Get back Test
-    await get_reply_of_message_of_id(chat_room_id, "sign out", client)
-
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
+    reply = await get_reply_of_message_of_id(chat_room_id, "sign out", client)
+    m = re.search(r"Log No.(\d+)", reply)
     if m:
         log_id = m.group(1)
         print(log_id)
+
+    (message,) = await client.get_messages(bot_id)
+    print(message.text)
     # conversation
     async with client.conversation(bot_id) as conv:
 
@@ -105,15 +105,15 @@ async def test_sign_out_rewrite(client: TelegramClient):
     _ = await client.connect()
 
     # ...Get back Test
-    await get_reply_of_message_of_id(chat_room_id, "sign out", client)
+    reply = await get_reply_of_message_of_id(chat_room_id, "sign out", client)
+    print("+++\n", reply, "What is problem above?")
+    m = re.search(r"Log No.(\d+)", reply)
+    log_id = m.group(1)
 
     (message,) = await client.get_messages(bot_id)
     print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
-    if m:
-        log_id = m.group(1)
-    sleep(sleep_time)
 
+    sleep(sleep_time)
     # Signing Out conversation
     async with client.conversation(bot_id) as conv:
 
@@ -155,13 +155,13 @@ async def test_sign_out_edit(client: TelegramClient):
     _ = await client.connect()
 
     # ...Get back Test
-    await get_reply_of_message_of_id(chat_room_id, "sign out", client)
+    reply = await get_reply_of_message_of_id(chat_room_id, "sign out", client)
+    m = re.search(r"Log No.(\d+)", reply)
+    if m:
+        log_id = m.group(1)
 
     (message,) = await client.get_messages(bot_id)
     print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
-    if m:
-        log_id = m.group(1)
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
