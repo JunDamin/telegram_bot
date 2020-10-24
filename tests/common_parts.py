@@ -11,7 +11,8 @@ async def get_reply_of_message_in_conv(message: str, conv: TelegramClient.conver
     param conv: conversation which you want to use
     return : text message of response of the message
     """
-    await conv.send_message(message)
+    if message:
+        await conv.send_message(message)
     response = await conv.get_response()
     print(response.text)
     sleep(sleep_time)
@@ -26,13 +27,19 @@ async def get_reply_of_message_of_id(id, message: str, client: TelegramClient):
     param client: client which you want to use
     return : text message of response of the message
     """
-    message = await client.send_message(id, message)
-    message_id = message.id
+    if message:
+        message = await client.send_message(id, message)
+        print("send message")
+        message_id = message.id
+    else:
+        message_id = None
+
     while True:
         (message,) = await client.get_messages(id)
         if message_id != message.id:
             break
         else:
+            print(message_id, message.id)
             sleep(sleep_time)
     print(message.text)
     sleep(sleep_time)

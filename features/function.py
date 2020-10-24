@@ -1,5 +1,5 @@
 import pytz
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, ParseMode
 from features.data_management import (
     create_connection,
@@ -16,6 +16,7 @@ from features.data_management import (
     select_record,
     delete_record,
 )
+from features.text_function import make_record_text
 
 
 def check_status(context, status):
@@ -125,30 +126,28 @@ def make_text_from_logbook(rows, header=""):
     text_message = header
 
     chat_id = ""
-    for (
-        log_id,
-        _,
-        first_name,
-        last_name,
-        _datetime,
-        category,
-        sub_category,
-        longitude,
-        latitude,
-        remarks,
-        confirmation,
-        work_content_id,
-    ) in rows:
+    for row in rows:
+        (
+            log_id,
+            _,
+            first_name,
+            last_name,
+            _datetime,
+            category,
+            sub_category,
+            longitude,
+            latitude,
+            remarks,
+            confirmation,
+            work_content_id,
+        ) = row
+
         if chat_id != _:
             chat_id = _
             text_message += f"\n\n*_{first_name} {last_name}_'s log as below*\n"
 
-        dt = datetime.fromisoformat(_datetime)
-        record = f"""
-    {category} {"- " + sub_category if sub_category else ""}
-    Log No.{log_id} : {convert_datetime_to_text(dt)}
-    location : {longitude if longitude else "-"}, {latitude if latitude else "-"}
-    remarks : {remarks if remarks else "-"}\n"""
+        record = make_record_text(row)
+
         if work_content_id:
             conn = create_connection()
             rows = select_record(
@@ -271,7 +270,7 @@ def delete_content(update, context):
     return log_id
 
 
-def send_markdown(update, context, user_id, text_message, reply_keyboard):
+def send_markdown(update, context, user_id, text_message, reply_keyboard=False):
 
     text_message = text_message.replace(".", "\\.")
     text_message = text_message.replace("-", "\\-")
@@ -310,11 +309,5 @@ def convert_text_to_md(text):
     }
     for key in convert_dict:
         text = text.replace(key, convert_dict[key])
-
-    return text
-
-
-def convert_datetime_to_text(date: datetime):
-    text = date.strftime("%m-%d *__%H:%M__*")
 
     return text

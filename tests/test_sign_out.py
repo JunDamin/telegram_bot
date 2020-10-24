@@ -51,12 +51,11 @@ async def test_sign_out_check(client: TelegramClient):
         print(dialog.name, "has ID", dialog.id)
 
     # ... get back Test
-    await get_reply_of_message_of_id(bot_id, "SKIP", client)
-    await get_reply_of_message_of_id(chat_room_id, "sign out", client)
+    reply = await get_reply_of_message_of_id(bot_id, "SKIP", client)
+    reply = await get_reply_of_message_of_id(chat_room_id, "sign out", client)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
 
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
+    m = re.search(r"Log No.(\d+)", reply)
     if m:
         log_id = m.group(1)
         await erase_log(bot_id, str(log_id), client)
@@ -74,12 +73,12 @@ async def test_sign_out_first(client: TelegramClient):
     # ...Get back Test
     reply = await get_reply_of_message_of_id(chat_room_id, "sign out", client)
     m = re.search(r"Log No.(\d+)", reply)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
+
     if m:
         log_id = m.group(1)
         print(log_id)
 
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
     # conversation
     async with client.conversation(bot_id) as conv:
 
@@ -106,12 +105,10 @@ async def test_sign_out_rewrite(client: TelegramClient):
 
     # ...Get back Test
     reply = await get_reply_of_message_of_id(chat_room_id, "sign out", client)
-    print("+++\n", reply, "What is problem above?")
     m = re.search(r"Log No.(\d+)", reply)
     log_id = m.group(1)
 
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
 
     sleep(sleep_time)
     # Signing Out conversation
@@ -160,8 +157,7 @@ async def test_sign_out_edit(client: TelegramClient):
     if m:
         log_id = m.group(1)
 
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:

@@ -20,6 +20,10 @@ from features.data_management import (
     select_log,
     delete_log,
 )
+from features.text_function import (
+    make_text_signing_in_greeting,
+    make_text_signing_in_and_ask_info,
+)
 
 
 # Sign in status
@@ -42,22 +46,19 @@ def start_signing_in(update, context):
         # set status
         context.user_data["log_id"] = log_id
         context.user_data["status"] = "SIGN_IN"
-
+        dt = update.message.date.astimezone(pytz.timezone("Africa/Douala"))
         # set text
-        SIGN_IN_GREETING = f"""Good morning, `{user.first_name}`.\nYou have signed in with Log No. {log_id}"""
-        dt = update.message.date.astimezone(pytz.timezone('Africa/Douala'))
-        SIGN_TIME = f"""signing time: {dt.strftime("%m-%d *__%H:%M__*")}"""
-        ASK_INFO = """Would you like to share where you work?"""
-        CHECK_DM = """_Please check my DM(Direct Message) to you_"""
 
         # check if the chat is group or not
         if update.message.chat.type == "group":
-            text_message = f"{SIGN_IN_GREETING}\n{CHECK_DM}\n{SIGN_TIME}"
+            text_message = make_text_signing_in_greeting(log_id, user.first_name, dt)
             reply_markdown(update, context, text_message)
 
         # send Private message to update
         try:
-            text_message = f"{SIGN_IN_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
+            text_message = make_text_signing_in_and_ask_info(
+                log_id, user.first_name, dt
+            )
             keyboard = [
                 ["Office", "Home"],
             ]

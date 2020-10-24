@@ -51,12 +51,10 @@ async def test_sign_in_check(client: TelegramClient):
         print(dialog.name, "has ID", dialog.id)
 
     # ...Sign In Test
-    await get_reply_of_message_of_id(bot_id, "SKIP", client)
-    await get_reply_of_message_of_id(chat_room_id, "sign in", client)
-
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
+    reply = await get_reply_of_message_of_id(bot_id, "SKIP", client)
+    reply = await get_reply_of_message_of_id(chat_room_id, "sign in", client)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
+    m = re.search(r"Log No.(\d+)", reply)
     if m:
         log_id = m.group(1)
         await erase_log(bot_id, str(log_id), client)
@@ -72,14 +70,14 @@ async def test_sign_in_first(client: TelegramClient):
     _ = await client.connect()
 
     # ...Sign In Test
-    await get_reply_of_message_of_id(chat_room_id, "sign in", client)
+    reply = await get_reply_of_message_of_id(chat_room_id, "sign in", client)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
 
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
+    m = re.search(r"Log No.(\d+)", reply)
     if m:
         log_id = m.group(1)
         print(log_id)
+
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
 
@@ -105,11 +103,10 @@ async def test_sign_in_rewrite(client: TelegramClient):
     _ = await client.connect()
 
     # ...Sign In Test
-    await get_reply_of_message_of_id(chat_room_id, "sign in", client)
+    reply = await get_reply_of_message_of_id(chat_room_id, "sign in", client)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
 
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
+    m = re.search(r"Log No.(\d+)", reply)
     if m:
         log_id = m.group(1)
     sleep(sleep_time)
@@ -155,8 +152,7 @@ async def test_sign_in_edit(client: TelegramClient):
     if m:
         log_id = m.group(1)
 
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:

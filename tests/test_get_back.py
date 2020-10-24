@@ -53,10 +53,8 @@ async def test_get_back_check(client: TelegramClient):
     # ... get back Test
     await get_reply_of_message_of_id(bot_id, "SKIP", client)
     await get_reply_of_message_of_id(chat_room_id, "back to work", client)
-
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
+    m = re.search(r"Log No.(\d+)", reply)
     if m:
         log_id = m.group(1)
         await erase_log(bot_id, str(log_id), client)
@@ -74,9 +72,8 @@ async def test_get_back_first(client: TelegramClient):
     # ...Get back Test
     await get_reply_of_message_of_id(chat_room_id, "back to work", client)
 
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
+    m = re.search(r"Log No.(\d+)", reply)
     if m:
         log_id = m.group(1)
         print(log_id)
@@ -105,11 +102,10 @@ async def test_get_back_rewrite(client: TelegramClient):
     _ = await client.connect()
 
     # ...Get back Test
-    await get_reply_of_message_of_id(chat_room_id, "back to work", client)
+    reply = await get_reply_of_message_of_id(chat_room_id, "back to work", client)
 
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
-    m = re.search(r"Log No.(\d+)", message.text)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
+    m = re.search(r"Log No.(\d+)", reply)
     if m:
         log_id = m.group(1)
     sleep(sleep_time)
@@ -154,8 +150,7 @@ async def test_get_back_edit(client: TelegramClient):
     if m:
         log_id = m.group(1)
 
-    (message,) = await client.get_messages(bot_id)
-    print(message.text)
+    reply = await get_reply_of_message_of_id(bot_id, "", client)
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
