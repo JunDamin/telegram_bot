@@ -9,8 +9,7 @@ from features.function import (
 
 def send_markdown(update, context, user_id, text_message, reply_keyboard=False):
 
-    text_message = text_message.replace(".", "\\.")
-    text_message = text_message.replace("-", "\\-")
+    text_message = convert_text_to_md(text_message)
 
     context.bot.send_message(
         chat_id=user_id,
@@ -57,7 +56,7 @@ def initiate_private_conversation(
     group_keyboard = [["Sign In", "Back to Work", "Sign Out"]]
     try:
         # send to group chat
-        reply_markdown(update, context, group_message, group_keyboard)
+        send_markdown(update, context, update.message.chat.id, group_message, group_keyboard)
         send_markdown(update, context, user.id, private_message, keyboard)
 
     except Unauthorized:
@@ -121,4 +120,3 @@ def send_initiating_message_by_branch(update, context, is_exist, data_dict: dict
             data["keyboard"],
         )
         return data["return"]
-    

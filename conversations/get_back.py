@@ -1,21 +1,21 @@
 import pytz
 from telegram import KeyboardButton
-from telegram.error import Unauthorized
 from telegram.ext import ConversationHandler
 from features.log import log_info
 from features.function import (
     update_sub_category,
     set_basic_user_data,
-    get_today_log_of_chat_id_category,
     make_text_from_logbook,
     select_log_to_text,
     select_log,
     confirm_record,
 )
 from features.message import (
-    set_location,
-    send_markdown,
     reply_markdown,
+    set_context,
+    set_location,
+    get_log_id_and_record,
+    send_initiating_message_by_branch,
 )
 from features.data_management import (
     create_connection,
@@ -32,74 +32,58 @@ ANSWER_LOG_DELETE, ANSWER_LUNCH_TYPE, ANSWER_LUNCH_LOCATION, ANSWER_CONFIRMATION
 @log_info()
 def get_back_to_work(update, context):
 
-    # check
+    # set variables and context
     user = update.message.from_user
-    rows = get_today_log_of_chat_id_category(user.id, "getting back")
+    dt = update.message.date.astimezone(pytz.timezone("Africa/Douala"))
+    log_id, record, is_exist = get_log_id_and_record(update, context, "getting back")
+    context_dict = {"log_id": log_id, "status": "GET_BACK"}
+    set_context(update, context, context_dict)
 
-    if not rows:
-        log_id = set_basic_user_data(update, context, "getting back")
-
-        # set message texts
-        SIGN_IN_GREETING = f"""Good afternoon, {user.first_name}.\n
+    GET_BACK_GREETING = f"""Good afternoon, {user.first_name}.\n
 Welcome back. You have been logged with Log No. {log_id}"""
-        dt = update.message.date.astimezone(pytz.timezone("Africa/Douala"))
-        SIGN_TIME = f"""signing time: {dt.strftime("%m-%d *__%H:%M__*")}"""
-        ASK_INFO = """Did you have lunch with KOICA collagues?"""
-        CHECK_DM = """"Please check my DM(Direct Message) to you"""
+    dt = update.message.date.astimezone(pytz.timezone("Africa/Douala"))
+    SIGN_TIME = f"""signing time: {dt.strftime("%m-%d *__%H:%M__*")}"""
+    ASK_INFO = """Did you have lunch with KOICA collagues?"""
+    CHECK_DM = """"Please check my DM(Direct Message) to you"""
 
-        # check if the chat is group or not
-        if update.message.chat.type == "group":
-            text_message = f"{SIGN_IN_GREETING}\n{CHECK_DM}\n{SIGN_TIME}"
-            reply_markdown(update, context, text_message)
+    # set dictionary data
+    rewrite_header_message = "You have already signed out as below. "
+    rewrite_footer_message = "\nDo you want to delete it and sign out again? or SKIP it?"
 
-        # set status
-        context.user_data["log_id"] = log_id
-        context.user_data["status"] = "GET_BACK"
-
-        # send Private message to update
-        try:
-            text_message = f"{SIGN_IN_GREETING}\n{ASK_INFO}\n{SIGN_TIME}"
-            reply_keyboard = [
+    data_dict = {
+        "new": {
+            "group_message": f"{GET_BACK_GREETING}\n{CHECK_DM}\n{SIGN_TIME}",
+            "private_message": f"{GET_BACK_GREETING}\n{ASK_INFO}\n{SIGN_TIME}",
+            "keyboard": [
                 ["Without any member of KOICA", "With KOICA Colleagues"],
-            ]
-            send_markdown(update, context, user.id, text_message, reply_keyboard)
-
-        except Unauthorized:
-            text_message = (
-                "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
-            )
-            reply_markdown(update, context, text_message)
-
-        return ANSWER_LUNCH_TYPE
-    else:
-        record = rows[0]
-        log_id = record[0]
-        context.user_data["log_id"] = log_id
-        context.user_data["status"] = "GET_BACK"
-        try:
-            message = "You have already reported in as below. "
-            text_message = make_text_from_logbook(rows, message)
-            reply_markdown(update, context, text_message)
-
-            text_message += "\nDo you want to delete it and register again? or SKIP it?"
-            reply_keyboard = [
+            ],
+            "return": ANSWER_LUNCH_TYPE
+        },
+        "rewrite": {
+            "group_message": make_text_from_logbook(
+                [
+                    record,
+                ],
+                rewrite_header_message,
+            ),
+            "private_message": make_text_from_logbook(
+                (record,),
+                rewrite_header_message,
+                rewrite_footer_message,
+            ),
+            "keyboard": [
                 ["Delete and Get Back to Work Again", "SKIP"],
-            ]
-            send_markdown(update, context, user.id, text_message, reply_keyboard)
-
-        except Unauthorized:
-            reply_markdown(update, context, text_message)
-            text_message = (
-                "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
-            )
+            ],
+            "return": None,
+        },
+    }
+    return send_initiating_message_by_branch(update, context, is_exist, data_dict)
 
 
 @log_info()
 def ask_confirmation_of_removal(update, context):
     log_id = context.user_data.get("log_id")
     if log_id:
-        context.user_data["remove_log_id"] = log_id
-
         conn = create_connection()
         row = select_log(conn, log_id)
         conn.close()

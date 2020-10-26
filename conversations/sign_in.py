@@ -86,8 +86,6 @@ def start_signing_in(update, context):
 def ask_confirmation_of_removal(update, context):
     log_id = context.user_data.get("log_id")
     if log_id:
-        context.user_data["remove_log_id"] = log_id
-
         conn = create_connection()
         row = select_log(conn, log_id)
         conn.close()
