@@ -153,11 +153,10 @@ async def test_sign_out_edit(client: TelegramClient):
 
     # ...Get back Test
     reply = await get_reply_of_message_of_id(chat_room_id, "sign out", client)
-    m = re.search(r"Log No.(\d+)", reply)
-    if m:
-        log_id = m.group(1)
-
     reply = await get_reply_of_message_of_id(bot_id, "", client)
+    m = re.search(r"Log No.(\d+)", reply)
+    log_id = m.group(1)
+
 
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
@@ -179,8 +178,7 @@ async def test_sign_out_edit(client: TelegramClient):
         await check_assert_with_qna(qna, conv)
 
         # earase log after use
-        if m:
-            await erase_log(bot_id, str(log_id), client)
+        await erase_log(bot_id, str(log_id), client)
 
     await client.disconnect()
     await client.disconnected

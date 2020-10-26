@@ -40,7 +40,7 @@ def get_back_to_work(update, context):
     set_context(update, context, context_dict)
 
     GET_BACK_GREETING = f"""Good afternoon, {user.first_name}.\n
-Welcome back. You have been logged with Log No. {log_id}"""
+Welcome back. You have been logged with Log No.{log_id}"""
     dt = update.message.date.astimezone(pytz.timezone("Africa/Douala"))
     SIGN_TIME = f"""signing time: {dt.strftime("%m-%d *__%H:%M__*")}"""
     ASK_INFO = """Did you have lunch with KOICA collagues?"""

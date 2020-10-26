@@ -34,7 +34,7 @@ def convert_datetime_to_text(_datetime: datetime):
 
 def make_text_signing_in_greeting(log_id, first_name, _datetime: datetime):
     SIGN_IN_GREETING = (
-        f"""Good morning, `{first_name}`.\nYou have signed in with Log No. {log_id}"""
+        f"""Good morning, `{first_name}`.\nYou have signed in with Log No.{log_id}"""
     )
     SIGN_TIME = f"""signing time: {_datetime.strftime("%m-%d *__%H:%M__*")}"""
     CHECK_DM = """_Please check my DM(Direct Message) to you_"""
@@ -44,7 +44,7 @@ def make_text_signing_in_greeting(log_id, first_name, _datetime: datetime):
 
 def make_text_signing_in_and_ask_info(log_id, first_name, _datetime: datetime):
     SIGN_IN_GREETING = (
-        f"""Good morning, `{first_name}`.\nYou have signed in with Log No. {log_id}"""
+        f"""Good morning, `{first_name}`.\nYou have signed in with Log No.{log_id}"""
     )
     SIGN_TIME = f"""signing time: {_datetime.strftime("%m-%d *__%H:%M__*")}"""
     ASK_INFO = """Would you like to share where you work?"""

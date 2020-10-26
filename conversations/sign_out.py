@@ -46,7 +46,7 @@ def start_signing_out(update, context):
     set_context(update, context, context_dict)
 
     SIGN_OUT_GREETING = (
-        f"""Good evening, {user.first_name}.\nYou have signed out today."""
+        f"""Good evening, {user.first_name}.\nYou have signed out today with Log No.{log_id}"""
     )
     dt = update.message.date.astimezone(pytz.timezone("Africa/Douala"))
     SIGN_TIME = f"""signing time: {dt.strftime("%m-%d *__%H:%M__*")}"""

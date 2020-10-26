@@ -59,8 +59,9 @@ def remove_log(update, context):
         delete_log(conn, log_id)
         conn.close()
 
-        text_message = f"Log No. {log_id} has been Deleted\n"
+        text_message = f"Log No.{log_id} has been Deleted\n"
         reply_markdown(update, context, text_message)
+        context.user_data.clear()
     else:
         text_message = "process has been stoped. The log has not been deleted."
         reply_markdown(update, context, text_message)
