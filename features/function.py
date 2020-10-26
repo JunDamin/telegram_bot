@@ -2,13 +2,6 @@ import pytz
 from datetime import date, timedelta
 from features.data_management import (
     create_connection,
-    update_log_category,
-    update_log_sub_category,
-    update_log_location,
-    create_log_basic,
-    select_logs_by_date,
-    select_log,
-    update_log_confirmation,
     insert_record,
     update_record,
     select_record,
@@ -28,7 +21,7 @@ def update_sub_category(log_id, sub_category):
 
     conn = create_connection("db.sqlite3")
     record = {"sub_category": sub_category}
-    update_log_sub_category(conn, record, log_id)
+    update_record(conn, "logbook", record, log_id)
     conn.close()
 
 
@@ -48,7 +41,7 @@ def set_basic_user_data(update, context, category):
     }
 
     conn = create_connection("db.sqlite3")
-    log_id = create_log_basic(conn, basic_user_data)
+    log_id = insert_record(conn, "logbook", basic_user_data)
     conn.close()
 
     for key in basic_user_data:
@@ -84,7 +77,14 @@ def get_logs_of_the_day(the_date):
     end_date = start_date + timedelta(1)
 
     conn = create_connection("db.sqlite3")
-    rows = select_logs_by_date(conn, start_date, end_date)
+    rows = select_record(
+        conn,
+        "logbook",
+        LOG_COLUMN,
+        {},
+        f"strftime('%s', timestamp) \
+        BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}')",
+    )
 
     header_message = f"{start_date.isoformat()}'s Logging\n"
     text_message = make_text_from_logbook(rows, header_message)
@@ -113,7 +113,7 @@ def update_category(log_id, category):
 
     conn = create_connection("db.sqlite3")
     record = {"category": category}
-    update_log_category(conn, record, log_id)
+    update_record(conn, "logbook", record, log_id)
     conn.close()
 
 
@@ -122,7 +122,7 @@ def check_log_id(log_id):
     ans = False
 
     conn = create_connection("db.sqlite3")
-    row = select_log(conn, log_id)
+    row = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
     conn.close()
     if row:
         ans = True
@@ -148,7 +148,7 @@ def put_location(location, user_data):
     if location:
         conn = create_connection("db.sqlite3")
         record = {"longitude": location.longitude, "latitude": location.latitude}
-        update_log_location(conn, record, str(user_data.get("log_id")))
+        update_record(conn, "logbook", record, str(user_data.get("log_id")))
         conn.close()
         return True
 
@@ -158,7 +158,7 @@ def put_location(location, user_data):
 def confirm_record(update, context):
     conn = create_connection()
     record = {"confirmation": "user confirmed"}
-    update_log_confirmation(conn, record, context.user_data.get("log_id"))
+    update_record(conn, "logbook", record, context.user_data.get("log_id"))
 
 
 def set_work_content(update, context, work_content):

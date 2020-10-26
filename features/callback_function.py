@@ -3,7 +3,6 @@ from telegram.ext import ConversationHandler, CommandHandler
 from features.data_management import (
     create_connection,
     write_csv,
-    select_all_logs,
     select_record
 )
 from features.log import log_info
@@ -65,7 +64,7 @@ def help_command(update, context):
 def send_file(update, context):
     """ Send a file when comamnd /signbook is issued"""
     conn = create_connection()
-    record = select_all_logs(conn)
+    record = select_record(conn, "logbook", ["*"], {})
     conn.close()
     header = [
         "id",

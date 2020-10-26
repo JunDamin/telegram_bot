@@ -21,7 +21,7 @@ def ask_log_id_to_edit(update, context):
         "logbook",
         LOG_COLUMN,
         {"chat_id": user.id},
-        "ORDER BY datetime DESC LIMIT 3",
+        "ORDER BY timestamp DESC LIMIT 3",
     )
     rows = rows[-1::-1]
     conn.close()

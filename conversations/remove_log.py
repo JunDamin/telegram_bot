@@ -1,7 +1,7 @@
 from telegram.ext import ConversationHandler
 from features.data_management import (
     create_connection,
-    delete_log,
+    delete_record,
     select_record
 )
 from features.function import make_text_from_logbook
@@ -57,7 +57,7 @@ def remove_log(update, context):
         log_id = context.user_data.get("remove_log_id")
 
         conn = create_connection()
-        delete_log(conn, log_id)
+        delete_record(conn, "logbook", {"id": log_id})
         conn.close()
 
         text_message = f"Log No.{log_id} has been Deleted\n"

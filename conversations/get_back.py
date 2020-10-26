@@ -47,8 +47,8 @@ Welcome back. You have been logged with Log No.{log_id}"""
     CHECK_DM = """"Please check my DM(Direct Message) to you"""
 
     # set dictionary data
-    rewrite_header_message = "You have already signed out as below. "
-    rewrite_footer_message = "\nDo you want to delete it and sign out again? or SKIP it?"
+    rewrite_header_message = "You have already gotten back as below. "
+    rewrite_footer_message = "\nDo you want to delete it and get back again? or SKIP it?"
 
     data_dict = {
         "new": {
@@ -120,7 +120,7 @@ def override_log_and_ask_lunch_type(update, context):
 
         return ConversationHandler.END
 
-    log_id = set_basic_user_data(update, context, "signing out")
+    log_id = set_basic_user_data(update, context, "getting back")
     context.user_data["log_id"] = log_id
     return ask_lunch_type(update, context)
 

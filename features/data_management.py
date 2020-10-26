@@ -106,7 +106,7 @@ def make_sql_select_record(
     else:
         condition = ""
     sql = f"""SELECT {", ".join(columns)} FROM {table_name}
-     WHERE {condition} {extra_condition};"""
+     {'WHERE' if condition or extra_condition else ""} {condition} {extra_condition};"""
 
     return sql
 
@@ -189,160 +189,8 @@ def delete_record(conn, table_name: str, condition: dict):
     return cursor.lastrowid
 
 
-def create_log_basic(conn, record):
-    """
-    Create a new log into logbook table
-    :param conn:
-    :param log: log info
-    :return log id:
-    """
-
-    sql = make_sql_insert_record("logbook", record)
-    print(sql)
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    conn.commit()
-    return cursor.lastrowid
-
-
-def update_log_category(conn, record, log_id):
-    """
-    :param conn:
-    :param categroy:
-    :return log id:
-    """
-
-    sql = make_sql_update_record("logbook", record, log_id)
-
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    conn.commit()
-    return cursor.lastrowid
-
-
-def update_log_sub_category(conn, record, log_id):
-    """
-    :param conn:
-    :param sub_categroy:
-    :return log id:
-    """
-
-    sql = make_sql_update_record("logbook", record, log_id)
-
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    conn.commit()
-    return cursor.lastrowid
-
-
-def update_log_location(conn, record, log_id):
-    """
-    :param conn:
-    :param sub_categroy:
-    :return log id:
-    """
-
-    sql = make_sql_update_record("logbook", record, log_id)
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    conn.commit()
-    return cursor.lastrowid
-
-
-def update_log_confirmation(conn, record, log_id):
-    """
-    :param conn:
-    :param data: (confirmation, id)
-    :return log id:
-    """
-
-    sql = make_sql_update_record("logbook", record, log_id)
-
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    conn.commit()
-    return cursor.lastrowid
-
-
-def select_all_logs(conn):
-    """"""
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM logbook")
-
-    rows = cursor.fetchall()
-
-    return rows
-
-
 def write_csv(record, header: list, file_name: str):
     with open(file_name, mode="w", encoding="utf-8-sig") as signing_file:
         writer = csv.writer(signing_file)
         writer.writerow(header)
         writer.writerows(record)
-
-
-def select_logs_by_chat_id(conn, chat_id):
-    """"""
-    select_record()
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM logbook WHERE chat_id = {chat_id} ")
-
-    rows = cursor.fetchall()
-
-    return rows
-
-
-def select_log_by_chat_id_category_date(conn, chat_id, category, start_date, end_date):
-    """"""
-    cursor = conn.cursor()
-    cursor.execute(
-        f"""SELECT * FROM logbook \
-         WHERE (chat_id = '{chat_id}'
-         AND category = '{category}'
-         AND timestamp  > '{start_date}'
-         AND timestamp <'{end_date}')
-         ORDER BY timestamp;"""
-    )
-
-    rows = cursor.fetchall()
-
-    return rows
-
-
-def update_remarks(conn, record, log_id):
-
-    sql = make_sql_update_record("logbook", record, log_id)
-
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    conn.commit()
-
-
-def select_logs_by_date(conn, start_date, end_date):
-
-    cursor = conn.cursor()
-    cursor.execute(
-        f"SELECT * FROM logbook \
-        WHERE strftime('%s', timestamp) \
-        BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}') ORDER BY first_name;"
-    )
-    rows = cursor.fetchall()
-
-    return rows
-
-
-def select_log(conn, log_id):
-    """"""
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM logbook WHERE id = ?", (log_id,))
-
-    row = cursor.fetchall()
-
-    return row
-
-
-def delete_log(conn, log_id):
-    """"""
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM logbook WHERE id = ?;", (log_id,))
-    conn.commit()
