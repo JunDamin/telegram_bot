@@ -12,8 +12,8 @@ from features.function import (
     make_text_from_logbook,
     get_logs_of_the_day,
     select_log_to_text,
-    reply_markdown,
 )
+from features.message import reply_markdown
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.

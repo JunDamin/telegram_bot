@@ -3,7 +3,8 @@ from features.data_management import (
     create_connection,
     update_record,
 )
-from features.function import select_log_to_text, check_log_id, reply_markdown
+from features.function import select_log_to_text, check_log_id
+from features.message import reply_markdown
 from features.log import log_info
 
 

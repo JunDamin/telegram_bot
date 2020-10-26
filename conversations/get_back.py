@@ -9,11 +9,11 @@ from features.function import (
     get_today_log_of_chat_id_category,
     make_text_from_logbook,
     select_log_to_text,
-    set_location,
     select_log,
     confirm_record,
 )
 from features.message import (
+    set_location,
     send_markdown,
     reply_markdown,
 )

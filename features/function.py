@@ -15,7 +15,6 @@ from features.data_management import (
     select_record,
     delete_record,
 )
-from freatures.message import reply_markdown
 from features.text_function import make_record_text
 
 
@@ -121,7 +120,7 @@ def get_today_log_of_chat_id_category(chat_id, category):
     return rows
 
 
-def make_text_from_logbook(rows, header=""):
+def make_text_from_logbook(rows, header="", footer=""):
 
     text_message = header
 
@@ -148,6 +147,7 @@ def make_text_from_logbook(rows, header=""):
             record += f"    work content : {work_content} \n"
         text_message += record
 
+    text_message += footer
     return text_message
 
 
@@ -195,17 +195,6 @@ def put_location(location, user_data):
         return True
 
     return False
-
-
-def set_location(update, context):
-    user_location = update.message.location
-    user_data = context.user_data
-    if put_location(user_location, user_data):
-        return 1
-    else:
-        text_message = """Something went wrong. Please try again""",
-        reply_markdown(update, context, text_message)
-        return 0
 
 
 def confirm_record(update, context):

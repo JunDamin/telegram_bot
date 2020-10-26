@@ -5,7 +5,6 @@ from telegram.ext import ConversationHandler
 from features.log import log_info
 from features.function import (
     set_basic_user_data,
-    set_location,
     get_today_log_of_chat_id_category,
     make_text_from_logbook,
     select_log_to_text,
@@ -15,6 +14,7 @@ from features.function import (
     delete_content,
 )
 from features.message import (
+    set_location,
     send_markdown,
     reply_markdown,
 )

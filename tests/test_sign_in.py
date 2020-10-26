@@ -179,4 +179,6 @@ async def test_sign_in_edit(client: TelegramClient):
 if __name__ == "__main__":
     client = TelegramClient(StringSession(session_str), api_id, api_hash)
     client.loop.run_until_complete(test_sign_in_check(client))
+    client.loop.run_until_complete(test_sign_in_first(client))
+    client.loop.run_until_complete(test_sign_in_rewrite(client))
     client.loop.run_until_complete(test_sign_in_edit(client))
