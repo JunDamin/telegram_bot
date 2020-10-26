@@ -1,5 +1,4 @@
 from telegram.ext import ConversationHandler
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from features.data_management import (
     create_connection,
     select_log,
@@ -7,7 +6,9 @@ from features.data_management import (
 )
 from features.function import make_text_from_logbook
 from features.log import log_info
-
+from features.message import (
+    reply_markdown,
+)
 
 # Delete log
 HANDLE_DELETE_LOG_ID, HANDLE_LOG_DELETE = map(chr, range(5, 7))
@@ -16,9 +17,9 @@ HANDLE_DELETE_LOG_ID, HANDLE_LOG_DELETE = map(chr, range(5, 7))
 @log_info()
 def ask_log_id_to_remove(update, context):
     """ """
-    update.message.reply_text(
-        "Which log do you want to remove?\nPlease send me the log number."
-    )
+    text_message = "Which log do you want to remove?\nPlease send me the log number."
+    reply_markdown(update, context, text_message)
+
     context.user_data["status"] = "REMOVE_LOG_ID"
 
     return HANDLE_DELETE_LOG_ID
@@ -38,14 +39,12 @@ def ask_confirmation_of_removal(update, context):
 
         header_message = f"Do you really want to do remove log No.{log_id}?\n"
         text_message = make_text_from_logbook(row, header_message)
+        reply_markdown(update, context, text_message, keyboard)
 
-        update.message.reply_text(
-            text_message,
-            reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True),
-        )
         return HANDLE_LOG_DELETE
     except ValueError:
-        update.message.reply_text("Please. Send me numbers only.")
+        text_message = "Please. Send me numbers only."
+        reply_markdown(update, context, text_message)
         return HANDLE_DELETE_LOG_ID
 
 
@@ -61,8 +60,8 @@ def remove_log(update, context):
         conn.close()
 
         text_message = f"Log No. {log_id} has been Deleted\n"
-        update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+        reply_markdown(update, context, text_message)
     else:
         text_message = "process has been stoped. The log has not been deleted."
-        update.message.reply_text(text_message, reply_markup=ReplyKeyboardRemove())
+        reply_markdown(update, context, text_message)
     return ConversationHandler.END

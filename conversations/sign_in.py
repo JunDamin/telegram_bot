@@ -12,9 +12,12 @@ from features.function import (
     set_location,
     select_log_to_text,
     confirm_record,
+)
+from features.message import (
     send_markdown,
     reply_markdown,
 )
+
 from features.data_management import (
     create_connection,
     select_log,

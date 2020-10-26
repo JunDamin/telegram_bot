@@ -1,6 +1,5 @@
 import pytz
 from datetime import date, timedelta
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, ParseMode
 from features.data_management import (
     create_connection,
     update_log_category,
@@ -16,6 +15,7 @@ from features.data_management import (
     select_record,
     delete_record,
 )
+from freatures.message import reply_markdown
 from features.text_function import make_record_text
 
 
@@ -127,7 +127,7 @@ def make_text_from_logbook(rows, header=""):
 
     chat_id = ""
     for row in rows:
-        
+
         user_id = row[1]
         first_name = row[2]
         last_name = row[3]
@@ -203,10 +203,8 @@ def set_location(update, context):
     if put_location(user_location, user_data):
         return 1
     else:
-        update.message.reply_text(
-            """Something went wrong. Please try again""",
-            reply_markup=ReplyKeyboardRemove(),
-        )
+        text_message = """Something went wrong. Please try again""",
+        reply_markdown(update, context, text_message)
         return 0
 
 
@@ -259,46 +257,3 @@ def delete_content(update, context):
     update_record(conn, "logbook", {"work_content_id": ""}, log_id)
     delete_record(conn, "contents", {"id": work_content_id})
     return log_id
-
-
-def send_markdown(update, context, user_id, text_message, reply_keyboard=False):
-
-    text_message = text_message.replace(".", "\\.")
-    text_message = text_message.replace("-", "\\-")
-
-    context.bot.send_message(
-        chat_id=user_id,
-        text=text_message,
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-        if reply_keyboard
-        else ReplyKeyboardRemove(),
-        parse_mode=ParseMode.MARKDOWN_V2,
-    )
-
-
-def reply_markdown(update, context, text_message, reply_keyboard=False):
-
-    text_message = convert_text_to_md(text_message)
-
-    update.message.reply_markdown_v2(
-        text=text_message,
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-        if reply_keyboard
-        else ReplyKeyboardRemove(),
-        parse_mode=ParseMode.MARKDOWN_V2,
-    )
-
-
-def convert_text_to_md(text):
-    convert_dict = {
-        ".": "\\.",
-        "-": "\\-",
-        "!": "\\!",
-        "(": "\\(",
-        ")": "\\)",
-        "+": "\\+",
-    }
-    for key in convert_dict:
-        text = text.replace(key, convert_dict[key])
-
-    return text
