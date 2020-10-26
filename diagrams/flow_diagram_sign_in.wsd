@@ -1,0 +1,31 @@
+@startuml
+
+title sign in flow
+
+(*) --> receive "sign in"
+if "check new record" then
+  -->[new record] "send message for ask work type"
+  --> "save work type and ask location"
+  --> "save location and send message for ask confirmation of log" 
+  --> if "user reply" then
+    -->[Confirm] "end process"
+    --> (*)
+  else
+    ->[Edit] "send message for ask work type"
+  endif
+else
+  ->[already exist] "send message for ask delete of the log"
+  if "user reply" then
+    -->[yes] "send message for ask confirmation of removal"
+    if "user reply" then
+        -->[yes] "delete the log"
+        -->"send message for ask work type"
+    else 
+        ->[No] "escape"
+    endif
+  else
+  -> [No] "escape"
+  -> (*)
+  endif
+
+@enduml

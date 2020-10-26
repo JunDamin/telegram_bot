@@ -67,7 +67,8 @@ def start_signing_in(update, context):
             text_message = (
                 "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
             )
-            reply_markdown(update, context, text_message)
+            keyboard = [["Sign In", "Back to Work", "Sign Out"]]
+            reply_markdown(update, context, text_message, keyboard)
 
         return ANSWER_WORKPLACE
     else:
@@ -78,9 +79,9 @@ def start_signing_in(update, context):
         try:
             message = "You have already signed in as below. "
             text_message = make_text_from_logbook(rows, message)
-
+            keyboard = [["Sign In", "Back to Work", "Sign Out"]]
             # send to group chat
-            reply_markdown(update, context, text_message)
+            reply_markdown(update, context, text_message, keyboard)
 
             text_message += (
                 "\nDo you want to *_delete it_* and sign in again? or SKIP it?"
@@ -92,9 +93,11 @@ def start_signing_in(update, context):
             send_markdown(update, context, user.id, text_message, keyboard)
 
         except Unauthorized:
-            update.effective_message.reply_text(
+            text_message = (
                 "Please, send 'Hi!' to me as DM(Direct Message) to authorize!"
             )
+            keyboard = [["Sign In", "Back to Work", "Sign Out"]]
+            reply_markdown(update, context, text_message, keyboard)
 
 
 @log_info()

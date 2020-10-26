@@ -1,0 +1,61 @@
+@startuml
+' uncomment the line below if you're using computer with a retina display
+' skinparam dpi 300
+!define Table(name,desc) class name as "desc" << (T,#FFAAAA) >>
+' we use bold for primary key
+' green color for unique
+' and underscore for not_null
+!define primary_key(x) <b>x</b>
+!define unique(x) <color:green>x</color>
+!define not_null(x) <u>x</u>
+' other tags available:
+' <i></i>
+' <back:COLOR></color>, where color is a color name or html color code
+' (#FFAACC)
+' see: http://plantuml.com/classes.html#More
+hide methods
+hide stereotypes
+
+' entities
+
+Table(users, "users\n(Users in our system)") {
+primary_key(id) INTEGER
+not_null(unique(username)) VARCHAR[32]
+not_null(password) VARCHAR[64]
+}
+
+Table(logbook, "logbook\n(logbook for user)") {
+primary_key(id) INTEGER
+not_null(chat_id) TEXT
+not_null(first_name) TEXT
+not_null(last_name) TEXT
+not_null(datetime) TEXT
+not_null(category) TEXT
+sub_category TEXT
+longitude TEXT
+latitude TEXT
+remarks TEXT
+confirmation TEXT
++ work_content_id TEXT
+}
+
+Table(contents, "contents\n(work contents of user)") {
+primary_key(id) INTEGER
+not_null(user_id) INTEGER
+not_null(unique(session_id)) VARCHAR[64]
+}
+
+
+Table(offices, "offices\n(offices of KOICA)") {
+primary_key(id) INTEGER
+not_null(user_id) INTEGER
+not_null(unique(session_id)) VARCHAR[64]
+}
+
+Table(chat_rooms, "chat_rooms\n(chat_rooms)") {
+primary_key(id) INTEGER
+not_null(user_id) INTEGER
+not_null(unique(session_id)) VARCHAR[64]
+}
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+scale 2
+title Frist Sign In Sequence
+
+User -> Chatbot : send text "sign in"
+Chatbot -> DB : "get_today_log_of_chat_id_category"
+DB --> Chatbot : return "rows"
+Chatbot --> User : Reply Message
+Chatbot --> User : Send message and keyboard
+Chatbot --> User : if error happened, reqeust private message
+User -> Chatbot : choose "Office" or "Home"
+Chatbot -> DB : save sub category with the log_id
+Chatbot --> User : ask location
+User -> Chatbot : send current location
+Chatbot -> DB : save location with the log_id
+Chatbot --> User : ask confirmation
+User -> Chatbot : confirm 
+Chatbot --> User : Confimed
+
+newpage Overwrite Sign In Sequence
+
+User -> Chatbot : send text "sign in"
+Chatbot -> DB : "get_today_log_of_chat_id_category"
+DB --> Chatbot : return "rows"
+Chatbot --> User : Reply Message
+Chatbot --> User : Send message and keyboard
+Chatbot --> User : if error happened, reqeust private message
+User -> Chatbot : choose "Delete and Sign In Agian " or "SKIP"
+Chatbot --> User : Ask Confirmation
+User -> Chatbot : choose "REMOVE SIGN IN LOG"
+Chatbot -> DB : "delete_log"
+Chatbot --> User : reply the deletion result
+Chatbot --> User : ask Work type
+User -> Chatbot : choose "Office" or "Home"
+Chatbot -> DB : save sub category with the log_id
+Chatbot --> User : ask location
+User -> Chatbot : send current location
+Chatbot -> DB : save location with the log_id
+Chatbot --> User : ask confirmation
+User -> Chatbot : confirm 
+Chatbot --> User : Confimed
+
+@enduml

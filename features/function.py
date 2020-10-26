@@ -127,23 +127,14 @@ def make_text_from_logbook(rows, header=""):
 
     chat_id = ""
     for row in rows:
-        (
-            log_id,
-            _,
-            first_name,
-            last_name,
-            _datetime,
-            category,
-            sub_category,
-            longitude,
-            latitude,
-            remarks,
-            confirmation,
-            work_content_id,
-        ) = row
+        
+        user_id = row[1]
+        first_name = row[2]
+        last_name = row[3]
+        work_content_id = row[-1]
 
-        if chat_id != _:
-            chat_id = _
+        if chat_id != user_id:
+            chat_id = user_id
             text_message += f"\n\n*_{first_name} {last_name}_'s log as below*\n"
 
         record = make_record_text(row)
