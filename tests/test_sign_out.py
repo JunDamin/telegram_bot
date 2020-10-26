@@ -157,7 +157,6 @@ async def test_sign_out_edit(client: TelegramClient):
     m = re.search(r"Log No.(\d+)", reply)
     log_id = m.group(1)
 
-
     # Signing in conversation
     async with client.conversation(bot_id) as conv:
 

@@ -1,5 +1,5 @@
 from telegram import ReplyKeyboardRemove
-from telegram.ext import ConversationHandler
+from telegram.ext import ConversationHandler, CommandHandler
 from features.data_management import (
     create_connection,
     write_csv,
@@ -12,6 +12,7 @@ from features.function import (
     make_text_from_logbook,
     get_logs_of_the_day,
     select_log_to_text,
+    private_only,
 )
 from features.message import reply_markdown
 
@@ -162,3 +163,13 @@ def get_work_content_file(update, context):
         "work_content.csv",
     )
     update.message.reply_document(document=open("work_content.csv", "rb"))
+
+
+command_handlers = (
+    CommandHandler("check", private_only(check_log)),
+    CommandHandler("today", get_logs_today),
+    CommandHandler("logbook", private_only(send_file)),
+    CommandHandler("work_content", private_only(get_work_content_file)),
+    CommandHandler("start", start),
+    CommandHandler("help", help_command),
+)

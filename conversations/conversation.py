@@ -238,7 +238,7 @@ remove_log_conv = ConversationHandler(
 
 
 # add handlers from conversation
-handlers = (
+conversation_handlers = (
     start_sign_in_conv,
     sign_in_conv,
     start_get_back_conv,

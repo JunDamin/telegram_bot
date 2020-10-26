@@ -2,18 +2,10 @@ import os
 from collections import deque
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
-from telegram.ext import Updater, CommandHandler
-from features.callback_function import (
-    start,
-    help_command,
-    send_file,
-    check_log,
-    get_logs_today,
-    get_work_content_file,
-)
+from telegram.ext import Updater
+from features.callback_function import command_handlers
+from conversations.conversation import conversation_handlers
 from features.data_management import start_database
-from features.function import private_only
-from conversations.conversation import handlers
 
 load_dotenv()
 env_path = Path(".") / ".env"
@@ -37,17 +29,12 @@ def main():
     dp = updater.dispatcher
 
     # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("check", private_only(check_log)))
-    dp.add_handler(CommandHandler("today", get_logs_today))
-    dp.add_handler(CommandHandler("logbook", private_only(send_file)))
-    dp.add_handler(CommandHandler("work_content", private_only(get_work_content_file)))
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help_command))
 
+    deque(map(dp.add_handler, command_handlers))
     # on messages handling i.e message - set callback function for each message keywords
 
     # add hander from conversations
-    deque(map(dp.add_handler, handlers))
+    deque(map(dp.add_handler, conversation_handlers))
 
     # Start the Bot
     updater.start_polling()
