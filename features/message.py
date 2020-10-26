@@ -56,7 +56,9 @@ def initiate_private_conversation(
     group_keyboard = [["Sign In", "Back to Work", "Sign Out"]]
     try:
         # send to group chat
-        send_markdown(update, context, update.message.chat.id, group_message, group_keyboard)
+        send_markdown(
+            update, context, update.message.chat.id, group_message, group_keyboard
+        )
         send_markdown(update, context, user.id, private_message, keyboard)
 
     except Unauthorized:

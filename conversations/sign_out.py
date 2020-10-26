@@ -20,8 +20,9 @@ from features.message import (
 )
 from features.data_management import (
     create_connection,
-    select_log,
+    select_record,
 )
+from features.constant import LOG_COLUMN
 
 # Sign out
 (
@@ -98,7 +99,7 @@ def ask_confirmation_of_removal(update, context):
     if log_id:
 
         conn = create_connection()
-        row = select_log(conn, log_id)
+        row = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
         conn.close()
 
         header_message = f"Do you really want to do remove log No.{log_id}?\n"

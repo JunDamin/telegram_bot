@@ -14,13 +14,15 @@ def start_database():
         chat_id text NOT NULL,
         first_name text NOT NULL,
         last_name text NOT NULL,
-        datetime text NOT NULL,
+        timestamp text NOT NULL,
         category text NOT NULL,
         sub_category text,
         longitude text,
         latitude text,
         remarks text,
         confirmation text,
+        work_content_id,
+        history text,
         FOREIGN KEY (work_content_id) REFERENCES contents(id)
     );""",
         """CREATE TABLE IF NOT EXISTS users (
@@ -35,7 +37,7 @@ def start_database():
         chat_id text NOT NULL,
         first_name text NOT NULL,
         last_name text NOT NULL,
-        datetime text NOT NULL,
+        timestamp text NOT NULL,
         work_content text,
         remarks text
     );""",
@@ -92,13 +94,19 @@ def make_sql_insert_record(table_name: str, record: dict):
     return sql
 
 
-def make_sql_select_record(table_name, columns, condition):
-    condition_list = [
-        " {} = '{}' ".format(key, condition.get(key)) for key in condition.keys()
-    ]
-
+def make_sql_select_record(
+    table_name, columns, equal_condition: dict, extra_condition: str
+):
+    if equal_condition:
+        condition_list = [
+            " {} = '{}' ".format(key, equal_condition.get(key))
+            for key in equal_condition.keys()
+        ]
+        condition = "AND ".join(condition_list)
+    else:
+        condition = ""
     sql = f"""SELECT {", ".join(columns)} FROM {table_name}
-     WHERE {", ".join(condition_list)};"""
+     WHERE {condition} {extra_condition};"""
 
     return sql
 
@@ -132,7 +140,7 @@ def insert_record(conn, table_name: str, record: dict):
     """
     Create a new log into logbook table
     :param conn:
-    :param record: (chat_id, frist_name, last_name, datetime, category, sub_category, longitude, latitude)
+    :param record: dict
     :return log id:
     """
 
@@ -145,9 +153,11 @@ def insert_record(conn, table_name: str, record: dict):
     return cursor.lastrowid
 
 
-def select_record(conn, table_name: str, columns: list, condition: dict):
+def select_record(
+    conn, table_name: str, columns: list, equal_condition: dict, extra_condition=""
+):
 
-    sql = make_sql_select_record(table_name, columns, condition)
+    sql = make_sql_select_record(table_name, columns, equal_condition, extra_condition)
     print(sql)
     cursor = conn.cursor()
     cursor.execute(sql)
@@ -273,10 +283,9 @@ def write_csv(record, header: list, file_name: str):
 
 def select_logs_by_chat_id(conn, chat_id):
     """"""
+    select_record()
     cursor = conn.cursor()
-    cursor.execute(
-        f"SELECT * FROM logbook WHERE chat_id = {chat_id} ORDER BY datetime DESC LIMIT 6"
-    )
+    cursor.execute(f"SELECT * FROM logbook WHERE chat_id = {chat_id} ")
 
     rows = cursor.fetchall()
 
@@ -290,9 +299,9 @@ def select_log_by_chat_id_category_date(conn, chat_id, category, start_date, end
         f"""SELECT * FROM logbook \
          WHERE (chat_id = '{chat_id}'
          AND category = '{category}'
-         AND datetime > '{start_date}'
-         AND datetime <'{end_date}')
-         ORDER BY datetime;"""
+         AND timestamp  > '{start_date}'
+         AND timestamp <'{end_date}')
+         ORDER BY timestamp;"""
     )
 
     rows = cursor.fetchall()
@@ -314,7 +323,7 @@ def select_logs_by_date(conn, start_date, end_date):
     cursor = conn.cursor()
     cursor.execute(
         f"SELECT * FROM logbook \
-        WHERE strftime('%s', datetime) \
+        WHERE strftime('%s', timestamp) \
         BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}') ORDER BY first_name;"
     )
     rows = cursor.fetchall()

@@ -1,8 +1,8 @@
 import re
 from telegram import ReplyKeyboardRemove
-from telegram.ext import ConversationHandler, MessageHandler, Filters
-from features.function import public_only, private_only
-from conversations import sign_in, sign_out, get_back, set_remarks, remove_log
+from telegram.ext import ConversationHandler, MessageHandler, Filters, CommandHandler
+from features.authority import public_only, private_only, self_only
+from conversations import sign_in, sign_out, get_back, set_remarks, remove_log, edit_log
 
 
 def cancel(update, context):
@@ -237,6 +237,28 @@ remove_log_conv = ConversationHandler(
 )
 
 
+edit_log_conv = ConversationHandler(
+    entry_points=[
+        CommandHandler("edit", private_only(edit_log.ask_log_id_to_edit))
+    ],
+    states={
+        edit_log.ANSWER_LOG_ID: [
+            MessageHandler(
+                Filters.regex("[0-9]*") & Filters.private,
+                edit_log.ask_confirmation_of_edit,
+            ),
+        ],
+        edit_log.ANSWER_CONFIRMATION: [
+            MessageHandler(
+                Filters.regex("^YES$|^NO$") & Filters.private, self_only(edit_log.start_edit)
+            ),
+        ],
+    },
+    fallbacks=[MessageHandler(Filters.regex("^SKIP$"), cancel)],
+    map_to_parent={},
+    allow_reentry=True
+)
+
 # add handlers from conversation
 conversation_handlers = (
     start_sign_in_conv,
@@ -247,5 +269,6 @@ conversation_handlers = (
     sign_out_conv,
     set_remarks_conv,
     remove_log_conv,
+    edit_log_conv,
     cancel_handler,
 )

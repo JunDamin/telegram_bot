@@ -20,14 +20,14 @@ from features.message import (
 
 from features.data_management import (
     create_connection,
-    select_log,
-    delete_record
+    delete_record,
+    select_record
 )
 from features.text_function import (
     make_text_signing_in_greeting,
     make_text_signing_in_and_ask_info,
 )
-
+from features.constant import LOG_COLUMN
 
 # Sign in status
 (ANSWER_WORKPLACE, ANSWER_LOG_DELETE, ANSWER_SIGN_IN_LOCATION, ANSWER_CONFIRMATION) = [
@@ -87,7 +87,7 @@ def ask_confirmation_of_removal(update, context):
     log_id = context.user_data.get("log_id")
     if log_id:
         conn = create_connection()
-        row = select_log(conn, log_id)
+        row = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
         conn.close()
 
         header_message = f"Do you really want to do remove log No.{log_id}?\n"
@@ -153,7 +153,8 @@ def set_sub_category_and_ask_location(update, context):
             ],
         ]
         reply_markdown(update, context, text_message, keyboard)
-
+    else:
+        print(context.user_data)
     return ANSWER_SIGN_IN_LOCATION
 
 

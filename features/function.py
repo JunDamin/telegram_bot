@@ -8,7 +8,6 @@ from features.data_management import (
     create_log_basic,
     select_logs_by_date,
     select_log,
-    select_log_by_chat_id_category_date,
     update_log_confirmation,
     insert_record,
     update_record,
@@ -16,35 +15,13 @@ from features.data_management import (
     delete_record,
 )
 from features.text_function import make_record_text
+from features.constant import LOG_COLUMN
 
 
 def check_status(context, status):
     user_data = context.user_data
     user_status = user_data.get("status")
     return status == user_status
-
-
-def private_only(func):
-    def wrapper(*args, **kwargs):
-        chat_type = args[0].message.chat.type
-        if chat_type == "private":
-            return func(*args, **kwargs)
-        else:
-            args[0].message.reply_text("please send me as DM(Direct Message)")
-
-    return wrapper
-
-
-def public_only(func):
-    def wrapper(*args, **kwargs):
-        chat_type = args[0].message.chat.type
-        print(chat_type)
-        if chat_type == "group":
-            return func(*args, **kwargs)
-        else:
-            args[0].message.reply_text("please send in the group chat")
-
-    return wrapper
 
 
 def update_sub_category(log_id, sub_category):
@@ -66,7 +43,7 @@ def set_basic_user_data(update, context, category):
         "chat_id": user.id,
         "first_name": user.first_name,
         "last_name": user.last_name,
-        "datetime": update.message.date.astimezone(pytz.timezone("Africa/Douala")),
+        "timestamp": update.message.date.astimezone(pytz.timezone("Africa/Douala")),
         "category": category,
     }
 
@@ -86,7 +63,14 @@ def get_logs_of_today():
     end_date = start_date + timedelta(1)
 
     conn = create_connection("db.sqlite3")
-    rows = select_logs_by_date(conn, start_date, end_date)
+    rows = select_record(
+        conn,
+        "logbook",
+        LOG_COLUMN,
+        {},
+        f"strftime('%s', timestamp) \
+        BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}')",
+    )
 
     header_message = f"Today's Logging\n({date.today().isoformat()})"
     text_message = make_text_from_logbook(rows, header_message)
@@ -113,9 +97,14 @@ def get_today_log_of_chat_id_category(chat_id, category):
     end_date = start_date + timedelta(1)
 
     conn = create_connection("db.sqlite3")
-    rows = select_log_by_chat_id_category_date(
-        conn, chat_id, category, start_date, end_date
+    rows = select_record(
+        conn,
+        "logbook",
+        LOG_COLUMN,
+        {"chat_id": chat_id, "category": category},
+        f" AND timestamp > '{start_date}' AND timestamp < '{end_date}' ORDER BY timestamp",
     )
+
     conn.close()
     return rows
 
@@ -144,7 +133,7 @@ def check_log_id(log_id):
 def select_log_to_text(log_id):
 
     conn = create_connection()
-    rows = select_log(conn, log_id)
+    rows = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
     conn.close()
     text_message = make_text_from_logbook(rows)
 
@@ -180,7 +169,7 @@ def set_work_content(update, context, work_content):
         "chat_id": user.id,
         "first_name": user.first_name,
         "last_name": user.last_name,
-        "datetime": update.message.date.astimezone(pytz.timezone("Africa/Douala")),
+        "timestamp": update.message.date.astimezone(pytz.timezone("Africa/Douala")),
         "work_content": work_content,
     }
 
@@ -215,7 +204,6 @@ def delete_content(update, context):
     update_record(conn, "logbook", {"work_content_id": ""}, log_id)
     delete_record(conn, "contents", {"id": work_content_id})
     return log_id
-
 
 
 def make_text_from_logbook(rows, header="", footer=""):

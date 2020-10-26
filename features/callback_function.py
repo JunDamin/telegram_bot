@@ -4,17 +4,17 @@ from features.data_management import (
     create_connection,
     write_csv,
     select_all_logs,
-    select_logs_by_chat_id,
+    select_record
 )
 from features.log import log_info
 from features.function import (
     get_logs_of_today,
     make_text_from_logbook,
     get_logs_of_the_day,
-    select_log_to_text,
-    private_only,
-)
+    select_log_to_text,)
+from features.authority import private_only
 from features.message import reply_markdown
+from features.constant import LOG_COLUMN
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -98,7 +98,7 @@ def check_log(update, context):
     user = update.message.from_user
 
     conn = create_connection()
-    rows = select_logs_by_chat_id(conn, user.id)
+    rows = select_record(conn, "logbook", LOG_COLUMN, {"chat_id": user.id}, "ORDER BY timestamp DESC LIMIT 6")
     rows = rows[-1::-1]
     conn.close()
 

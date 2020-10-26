@@ -1,14 +1,15 @@
 from telegram.ext import ConversationHandler
 from features.data_management import (
     create_connection,
-    select_log,
     delete_log,
+    select_record
 )
 from features.function import make_text_from_logbook
 from features.log import log_info
 from features.message import (
     reply_markdown,
 )
+from features.constant import LOG_COLUMN
 
 # Delete log
 HANDLE_DELETE_LOG_ID, HANDLE_LOG_DELETE = map(chr, range(5, 7))
@@ -34,7 +35,7 @@ def ask_confirmation_of_removal(update, context):
         keyboard = [["YES", "NO"]]
 
         conn = create_connection()
-        row = select_log(conn, log_id)
+        row = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
         conn.close()
 
         header_message = f"Do you really want to do remove log No.{log_id}?\n"

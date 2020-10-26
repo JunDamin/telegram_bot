@@ -7,7 +7,6 @@ from features.function import (
     set_basic_user_data,
     make_text_from_logbook,
     select_log_to_text,
-    select_log,
     confirm_record,
 )
 from features.message import (
@@ -20,8 +19,9 @@ from features.message import (
 from features.data_management import (
     create_connection,
     delete_record,
+    select_record
 )
-
+from features.constant import LOG_COLUMN
 
 # Lunch break
 ANSWER_LOG_DELETE, ANSWER_LUNCH_TYPE, ANSWER_LUNCH_LOCATION, ANSWER_CONFIRMATION = [
@@ -85,7 +85,7 @@ def ask_confirmation_of_removal(update, context):
     log_id = context.user_data.get("log_id")
     if log_id:
         conn = create_connection()
-        row = select_log(conn, log_id)
+        row = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
         conn.close()
 
         header_message = f"Do you really want to do remove log No.{log_id}?\n"
