@@ -21,7 +21,7 @@ from features.message import (
 from features.data_management import (
     create_connection,
     select_log,
-    delete_log,
+    delete_record
 )
 from features.text_function import (
     make_text_signing_in_greeting,
@@ -110,7 +110,7 @@ def override_log_and_ask_work_type(update, context):
     if answer:
         log_id = context.user_data.get("log_id")
         conn = create_connection()
-        delete_log(conn, log_id)
+        delete_record(conn, "logbook", {"id": log_id})
         conn.close()
 
         text_message = f"Log No. {log_id} has been Deleted\n"

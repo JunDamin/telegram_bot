@@ -1,4 +1,5 @@
 import csv
+from collections import deque
 import sqlite3
 from sqlite3 import Error
 from typing import Optional
@@ -7,7 +8,8 @@ from typing import Optional
 def start_database():
     # DB Setting
     database = "db.sqlite3"
-    sql_create_logbook_table = """CREATE TABLE IF NOT EXISTS logbook (
+    sql_tuple = (
+        """CREATE TABLE IF NOT EXISTS logbook (
         id integer PRIMARY KEY,
         chat_id text NOT NULL,
         first_name text NOT NULL,
@@ -20,15 +22,15 @@ def start_database():
         remarks text,
         confirmation text,
         FOREIGN KEY (work_content_id) REFERENCES contents(id)
-    );"""
-    sql_create_user_table = """CREATE TABLE IF NOT EXISTS users (
+    );""",
+        """CREATE TABLE IF NOT EXISTS users (
         chat_id text PRIMARY KEY,
         first_name text NOT NULL,
         last_name text NOT NULL,
         status text,
         remarks text
-    );"""
-    sql_create_content_table = """CREATE TABLE IF NOT EXISTS contents (
+    );""",
+        """CREATE TABLE IF NOT EXISTS contents (
         id integer PRIMARY KEY,
         chat_id text NOT NULL,
         first_name text NOT NULL,
@@ -36,14 +38,13 @@ def start_database():
         datetime text NOT NULL,
         work_content text,
         remarks text
-    );"""
+    );""",
+    )
 
     conn = create_connection(database)
     if conn is not None:
         # Create Project table
-        create_table(conn, sql_create_user_table)
-        create_table(conn, sql_create_content_table)
-        create_table(conn, sql_create_logbook_table)
+        deque(map(lambda x: create_table(conn, x), sql_tuple))
     conn.close()
 
 
@@ -274,7 +275,7 @@ def select_logs_by_chat_id(conn, chat_id):
     """"""
     cursor = conn.cursor()
     cursor.execute(
-        f"SELECT * FROM logbook WHERE chat_id = {chat_id} ORDER BY id DESC LIMIT 6"
+        f"SELECT * FROM logbook WHERE chat_id = {chat_id} ORDER BY datetime DESC LIMIT 6"
     )
 
     rows = cursor.fetchall()

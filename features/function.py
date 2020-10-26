@@ -120,37 +120,6 @@ def get_today_log_of_chat_id_category(chat_id, category):
     return rows
 
 
-def make_text_from_logbook(rows, header="", footer=""):
-
-    text_message = header
-
-    chat_id = ""
-    for row in rows:
-
-        user_id = row[1]
-        first_name = row[2]
-        last_name = row[3]
-        work_content_id = row[-1]
-
-        if chat_id != user_id:
-            chat_id = user_id
-            text_message += f"\n\n*_{first_name} {last_name}_'s log as below*\n"
-
-        record = make_record_text(row)
-
-        if work_content_id:
-            conn = create_connection()
-            rows = select_record(
-                conn, "contents", ["work_content"], {"id": work_content_id}
-            )
-            work_content = rows[0][0].replace("\\n", "\n")
-            record += f"    work content : {work_content} \n"
-        text_message += record
-
-    text_message += footer
-    return text_message
-
-
 def update_category(log_id, category):
 
     conn = create_connection("db.sqlite3")
@@ -246,3 +215,35 @@ def delete_content(update, context):
     update_record(conn, "logbook", {"work_content_id": ""}, log_id)
     delete_record(conn, "contents", {"id": work_content_id})
     return log_id
+
+
+
+def make_text_from_logbook(rows, header="", footer=""):
+
+    text_message = header
+
+    chat_id = ""
+    for row in rows:
+
+        user_id = row[1]
+        first_name = row[2]
+        last_name = row[3]
+        work_content_id = row[-1]
+
+        if chat_id != user_id:
+            chat_id = user_id
+            text_message += f"\n\n*_{first_name} {last_name}_'s log as below*\n"
+
+        record = make_record_text(row)
+
+        if work_content_id:
+            conn = create_connection()
+            rows = select_record(
+                conn, "contents", ["work_content"], {"id": work_content_id}
+            )
+            work_content = rows[0][0].replace("\\n", "\n")
+            record += f"    work content : {work_content} \n"
+        text_message += record
+
+    text_message += footer
+    return text_message
