@@ -1,15 +1,11 @@
 import os
 import pytest
-import re
-from time import sleep
 from pathlib import Path  # Python 3.6+ only
 from dotenv import load_dotenv
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 from common_parts import (
     get_reply_of_message_of_id,
-    erase_log,
-    check_assert_with_qna,
 )
 
 # Remember to use your own values from my.telegram.org!
