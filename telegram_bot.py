@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from telegram.ext import Updater
 from features.callback_function import command_handlers
 from conversations.conversation import conversation_handlers
-from features.data_management import start_database
+from features.db_management import start_database
 
 load_dotenv()
 env_path = Path(".") / ".env"

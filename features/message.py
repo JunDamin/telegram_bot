@@ -1,8 +1,8 @@
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, ParseMode
 from telegram.error import Unauthorized
-from features.function import (
+from features.data_IO import (
     get_today_log_of_chat_id_category,
-    set_basic_user_data,
+    post_basic_user_data,
     put_location,
 )
 
@@ -57,7 +57,7 @@ def initiate_private_conversation(
     try:
         # send to group chat
         send_markdown(
-            update, context, update.message.chat.id, group_message, group_keyboard
+            update, context, update.message.chat.id, group_message
         )
         send_markdown(update, context, user.id, private_message, keyboard)
 
@@ -74,7 +74,7 @@ def get_log_id_and_record(update, context, session: str):
         log_id = record[0]
         is_exist = True
     else:
-        log_id = set_basic_user_data(update, context, session)
+        log_id = post_basic_user_data(update, context, session)
         (record,) = get_today_log_of_chat_id_category(user.id, session)
         is_exist = False
     return log_id, record, is_exist

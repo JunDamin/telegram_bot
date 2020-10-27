@@ -1,6 +1,6 @@
 from telegram.ext import ConversationHandler
-from features.data_management import create_connection, select_record, update_record
-from features.function import make_text_from_logbook
+from features.db_management import create_connection, select_record, update_record
+from features.data_IO import make_text_from_logs
 from features.log import log_info
 from features.message import reply_markdown, set_context
 from features.constant import LOG_COLUMN
@@ -27,7 +27,7 @@ def ask_log_id_to_edit(update, context):
     conn.close()
 
     text_message = "Which log do you want to edit?\nPlease send me the log number."
-    text_message = make_text_from_logbook(rows, text_message)
+    text_message = make_text_from_logs(rows, text_message)
 
     reply_markdown(update, context, text_message)
 
@@ -48,7 +48,7 @@ def ask_confirmation_of_edit(update, context):
         conn.close()
 
         header_message = f"Do you really want to do edit log No.{log_id}?\n"
-        text_message = make_text_from_logbook(rows, header_message)
+        text_message = make_text_from_logs(rows, header_message)
         reply_markdown(update, context, text_message, keyboard)
 
         chat_id = rows[0][1]

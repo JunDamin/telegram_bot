@@ -1,16 +1,16 @@
 from telegram import ReplyKeyboardRemove
 from telegram.ext import ConversationHandler, CommandHandler
-from features.data_management import (
+from features.db_management import (
     create_connection,
     write_csv,
     select_record
 )
 from features.log import log_info
-from features.function import (
+from features.data_IO import (
     get_logs_of_today,
-    make_text_from_logbook,
+    make_text_from_logs,
     get_logs_of_the_day,
-    select_log_to_text,)
+    get_text_of_log_by_id,)
 from features.authority import private_only
 from features.message import reply_markdown
 from features.constant import LOG_COLUMN
@@ -102,7 +102,7 @@ def check_log(update, context):
     conn.close()
 
     header_message = "Here is your recent log info.\n"
-    text_message = make_text_from_logbook(rows, header_message)
+    text_message = make_text_from_logs(rows, header_message)
 
     reply_markdown(update, context, text_message)
 
@@ -112,7 +112,7 @@ def get_a_log(update, context):
     log_id = context.user_data.get("log_id")
     if log_id:
         text_message = "You have been logged as below.\n"
-        text_message += select_log_to_text(log_id)
+        text_message += get_text_of_log_by_id(log_id)
         reply_markdown(update, context, text_message)
 
     else:

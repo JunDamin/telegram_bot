@@ -2,12 +2,12 @@ import pytz
 from telegram import KeyboardButton
 from telegram.ext import ConversationHandler
 from features.log import log_info
-from features.function import (
-    set_basic_user_data,
-    make_text_from_logbook,
-    select_log_to_text,
-    confirm_record,
-    set_work_content,
+from features.data_IO import (
+    post_basic_user_data,
+    make_text_from_logs,
+    get_text_of_log_by_id,
+    put_confirmation,
+    post_work_content,
     delete_log_and_content,
     delete_content,
 )
@@ -18,7 +18,7 @@ from features.message import (
     get_log_id_and_record,
     send_initiating_message_by_branch,
 )
-from features.data_management import (
+from features.db_management import (
     create_connection,
     select_record,
 )
@@ -73,13 +73,13 @@ def start_signing_out(update, context):
             "return": ANSWER_WORK_TYPE,
         },
         "rewrite": {
-            "group_message": make_text_from_logbook(
+            "group_message": make_text_from_logs(
                 [
                     record,
                 ],
                 rewrite_header_message,
             ),
-            "private_message": make_text_from_logbook(
+            "private_message": make_text_from_logs(
                 (record,),
                 rewrite_header_message,
                 rewrite_footer_message,
@@ -103,7 +103,7 @@ def ask_confirmation_of_removal(update, context):
         conn.close()
 
         header_message = f"Do you really want to do remove log No.{log_id}?\n"
-        text_message = make_text_from_logbook(row, header_message)
+        text_message = make_text_from_logs(row, header_message)
         keyboard = [["REMOVE SIGN OUT LOG", "NO"]]
 
         reply_markdown(update, context, text_message, keyboard)
@@ -127,7 +127,7 @@ def override_log(update, context):
         text_message = "process has been stoped. The log has not been deleted."
         reply_markdown(update, context, text_message)
         return ConversationHandler.END
-    log_id = set_basic_user_data(update, context, "signing out")
+    log_id = post_basic_user_data(update, context, "signing out")
     context.user_data["log_id"] = log_id
     return ask_work_type(update, context)
 
@@ -162,7 +162,7 @@ def set_sign_out_location(update, context):
     if set_location(update, context):
         text_message = HEADER_MESSAGE
         keyboard = [["Confirm", "Edit"]]
-        text_message += select_log_to_text(user_data.get("log_id"))
+        text_message += get_text_of_log_by_id(user_data.get("log_id"))
 
         reply_markdown(update, context, text_message, keyboard)
 
@@ -176,7 +176,7 @@ def confirm_the_data(update, context):
     choices = {"Confirm": True, "Edit": False}
     answer = choices.get(update.message.text)
     if answer:
-        confirm_record(update, context)
+        put_confirmation(update, context)
         context.user_data.clear()
         text_message = "Confirmed"
         reply_markdown(update, context, text_message)
@@ -222,6 +222,6 @@ def check_work_content(update, context):
 @log_info()
 def save_content_and_ask_location(update, context):
     print(context.user_data.get("work_content"))
-    set_work_content(update, context, context.user_data.get("work_content"))
+    post_work_content(update, context, context.user_data.get("work_content"))
 
     return ask_sign_out_location(update, context)

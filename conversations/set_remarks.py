@@ -1,9 +1,9 @@
 from telegram.ext import ConversationHandler
-from features.data_management import (
+from features.db_management import (
     create_connection,
     update_record,
 )
-from features.function import select_log_to_text, check_log_id
+from features.data_IO import get_text_of_log_by_id, get_record_by_log_id
 from features.message import reply_markdown
 from features.log import log_info
 
@@ -29,7 +29,7 @@ def ask_log_id_for_remarks(update, context):
 def ask_content_for_remarks(update, context):
     text = update.message.text
     try:
-        if check_log_id(text):
+        if get_record_by_log_id(text):
             context.user_data["remarks_log_id"] = text
             text_message = "What remarks? do you want to add?"
             reply_markdown(update, context, text_message)
@@ -57,7 +57,7 @@ def set_remarks(update, context):
     context.user_data["log_id"] = log_id
 
     text_message = "remarks has been updated.\n"
-    text_message += select_log_to_text(log_id)
+    text_message += get_text_of_log_by_id(log_id)
     reply_markdown(update, context, text_message)
 
     return ConversationHandler.END

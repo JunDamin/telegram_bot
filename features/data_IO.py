@@ -1,6 +1,6 @@
 import pytz
 from datetime import date, timedelta
-from features.data_management import (
+from features.db_management import (
     create_connection,
     insert_record,
     update_record,
@@ -17,7 +17,7 @@ def check_status(context, status):
     return status == user_status
 
 
-def update_sub_category(log_id, sub_category):
+def put_sub_category(log_id, sub_category):
 
     conn = create_connection("db.sqlite3")
     record = {"sub_category": sub_category}
@@ -25,7 +25,7 @@ def update_sub_category(log_id, sub_category):
     conn.close()
 
 
-def set_basic_user_data(update, context, category):
+def post_basic_user_data(update, context, category):
     """
 
     return: log_id
@@ -66,7 +66,7 @@ def get_logs_of_today():
     )
 
     header_message = f"Today's Logging\n({date.today().isoformat()})"
-    text_message = make_text_from_logbook(rows, header_message)
+    text_message = make_text_from_logs(rows, header_message)
 
     return text_message
 
@@ -87,7 +87,7 @@ def get_logs_of_the_day(the_date):
     )
 
     header_message = f"{start_date.isoformat()}'s Logging\n"
-    text_message = make_text_from_logbook(rows, header_message)
+    text_message = make_text_from_logs(rows, header_message)
 
     return text_message
 
@@ -109,33 +109,21 @@ def get_today_log_of_chat_id_category(chat_id, category):
     return rows
 
 
-def update_category(log_id, category):
+def get_record_by_log_id(log_id):
 
     conn = create_connection("db.sqlite3")
-    record = {"category": category}
-    update_record(conn, "logbook", record, log_id)
+    rows = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
     conn.close()
+    
+    return rows
 
 
-def check_log_id(log_id):
-
-    ans = False
-
-    conn = create_connection("db.sqlite3")
-    row = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
-    conn.close()
-    if row:
-        ans = True
-
-    return ans
-
-
-def select_log_to_text(log_id):
+def get_text_of_log_by_id(log_id):
 
     conn = create_connection()
     rows = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
     conn.close()
-    text_message = make_text_from_logbook(rows)
+    text_message = make_text_from_logs(rows)
 
     return text_message
 
@@ -155,13 +143,13 @@ def put_location(location, user_data):
     return False
 
 
-def confirm_record(update, context):
+def put_confirmation(update, context):
     conn = create_connection()
     record = {"confirmation": "user confirmed"}
     update_record(conn, "logbook", record, context.user_data.get("log_id"))
 
 
-def set_work_content(update, context, work_content):
+def post_work_content(update, context, work_content):
 
     user = update.message.from_user
 
@@ -206,12 +194,12 @@ def delete_content(update, context):
     return log_id
 
 
-def make_text_from_logbook(rows, header="", footer=""):
+def make_text_from_logs(logs, header="", footer=""):
 
     text_message = header
 
     chat_id = ""
-    for row in rows:
+    for row in logs:
 
         user_id = row[1]
         first_name = row[2]
