@@ -62,7 +62,7 @@ def get_logs_of_today():
         LOG_COLUMN,
         {},
         f"strftime('%s', timestamp) \
-        BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}')",
+        BETWEEN strftime('%s', '{start_date}') AND strftime('%s', '{end_date}') ORDER BY first_name",
     )
 
     header_message = f"Today's Logging\n({date.today().isoformat()})"
