@@ -112,10 +112,10 @@ def get_today_log_of_chat_id_category(chat_id, category):
 def get_record_by_log_id(log_id):
 
     conn = create_connection("db.sqlite3")
-    rows = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
+    (row,) = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
     conn.close()
     
-    return rows
+    return row
 
 
 def get_text_of_log_by_id(log_id):
@@ -163,6 +163,25 @@ def post_work_content(update, context, work_content):
 
     conn = create_connection()
     content_id = insert_record(conn, "contents", record)
+    logbook_record = {"work_content_id": content_id}
+    update_record(conn, "logbook", logbook_record, context.user_data.get("log_id"))
+    conn.close()
+
+
+def put_work_content(update, context, work_content, work_content_id):
+
+    user = update.message.from_user
+
+    record = {
+        "chat_id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "timestamp": update.message.date.astimezone(pytz.timezone("Africa/Douala")),
+        "work_content": work_content,
+    }
+
+    conn = create_connection()
+    content_id = update_record(conn, "contents", record, work_content_id)
     logbook_record = {"work_content_id": content_id}
     update_record(conn, "logbook", logbook_record, context.user_data.get("log_id"))
     conn.close()

@@ -167,11 +167,15 @@ async def test_sign_out_edit(client: TelegramClient):
             ),
             ("It is a test", "Content of Work"),
             ("YES", "I see"),
+            ("/logbook", ""),
+            ("/work_content", ""),
             ("DEROUTE", "You have signed out as below"),
             ("Edit", "Would you like to share your today's content of work"),
             ("I worked at Office", "I see"),
             ("DEROUTE", "You have signed out as below"),
             ("Confirm", "Confirmed"),
+            ("/logbook", ""),
+            ("/work_content", ""),
         ]
 
         await check_assert_with_qna(qna, conv)
@@ -185,6 +189,7 @@ async def test_sign_out_edit(client: TelegramClient):
 
 if __name__ == "__main__":
     client = TelegramClient(StringSession(session_str), api_id, api_hash)
-    client.loop.run_until_complete(test_sign_out_check(client))
-    client.loop.run_until_complete(test_sign_out_first(client))
-    client.loop.run_until_complete(test_sign_out_rewrite(client))
+    # client.loop.run_until_complete(test_sign_out_check(client))
+    # client.loop.run_until_complete(test_sign_out_first(client))
+    # client.loop.run_until_complete(test_sign_out_rewrite(client))
+    client.loop.run_until_complete(test_sign_out_edit(client))

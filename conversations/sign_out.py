@@ -8,8 +8,10 @@ from features.data_IO import (
     get_text_of_log_by_id,
     put_confirmation,
     post_work_content,
+    put_work_content,
     delete_log_and_content,
     delete_content,
+    get_record_by_log_id,
 )
 from features.message import (
     reply_markdown,
@@ -46,9 +48,7 @@ def start_signing_out(update, context):
     context_dict = {"log_id": log_id, "status": "SIGN_OUT"}
     set_context(update, context, context_dict)
 
-    SIGN_OUT_GREETING = (
-        f"""Good evening, {user.first_name}.\nYou have signed out today with Log No.{log_id}"""
-    )
+    SIGN_OUT_GREETING = f"""Good evening, {user.first_name}.\nYou have signed out today with Log No.{log_id}"""
     dt = update.message.date.astimezone(pytz.timezone("Africa/Douala"))
     SIGN_TIME = f"""signing time: {dt.strftime("%m-%d *__%H:%M__*")}"""
     ASK_INFO = "Would you like to share your today's content of work?"
@@ -133,6 +133,22 @@ def override_log(update, context):
 
 
 def ask_sign_out_location(update, context):
+
+    check_branch = {
+        "I worked at Office": True,
+        "I would like to report because I worked at home": False,
+    }
+
+    if check_branch.get(update.message.text):
+        log_id = context.user_data.get("log_id")
+        record = get_record_by_log_id(log_id)
+        work_content_id = record[LOG_COLUMN.index("work_content_id")]
+    else:
+        work_content_id = None
+
+    if work_content_id:
+        delete_content(update, context)
+
     text_message = """I see! Please send me your location by click the button on your phone.
     1. Please check your location service is on.\n(if not please turn on your location service)
     2. Desktop app can not send location"""
@@ -221,7 +237,13 @@ def check_work_content(update, context):
 
 @log_info()
 def save_content_and_ask_location(update, context):
-    print(context.user_data.get("work_content"))
-    post_work_content(update, context, context.user_data.get("work_content"))
+    log_id = context.user_data.get("log_id")
+    record = get_record_by_log_id(log_id)
+    work_content = context.user_data.get("work_content")
+    work_content_id = record[LOG_COLUMN.index("work_content_id")]
+    if work_content_id:
+        put_work_content(update, context, work_content, work_content_id)
+    else:
+        post_work_content(update, context, work_content)
 
     return ask_sign_out_location(update, context)
