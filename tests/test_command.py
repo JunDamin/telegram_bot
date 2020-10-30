@@ -27,54 +27,41 @@ sleep_time = 0.5
 @pytest.mark.asyncio
 async def test_check(client: TelegramClient):
     # Getting information about yourself
-    _ = await client.connect()
 
     reply = await get_reply_of_message_of_id(bot_id, "/check", client)
     assert "Here is your recent log info" in reply
-
-    await client.disconnect()
-    await client.disconnected
 
 
 @pytest.mark.asyncio
 async def test_today(client: TelegramClient):
     # Getting information about yourself
-    _ = await client.connect()
 
     reply = await get_reply_of_message_of_id(bot_id, "/today", client)
     assert "Today's Logging" in reply
-
-    await client.disconnect()
-    await client.disconnected
 
 
 @pytest.mark.asyncio
 async def test_logbook(client: TelegramClient):
     # Getting information about yourself
-    _ = await client.connect()
 
     reply = await get_reply_of_message_of_id(bot_id, "/logbook", client)
     assert reply == ""
-
-    await client.disconnect()
-    await client.disconnected
 
 
 @pytest.mark.asyncio
 async def test_work_content(client: TelegramClient):
     # Getting information about yourself
-    _ = await client.connect()
 
     reply = await get_reply_of_message_of_id(bot_id, "/work_content", client)
     assert reply == ""
 
-    await client.disconnect()
-    await client.disconnected
-
 
 if __name__ == "__main__":
     client = TelegramClient(StringSession(session_str), api_id, api_hash)
+    client.connect()
     client.loop.run_until_complete(test_check(client))
     client.loop.run_until_complete(test_today(client))
     client.loop.run_until_complete(test_logbook(client))
     client.loop.run_until_complete(test_work_content(client))
+    client.disconnect()
+    client.disconnected

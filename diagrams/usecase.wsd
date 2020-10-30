@@ -1,0 +1,36 @@
+@startuml
+skinparam dpi 300
+:M. Lee GH\n: as hong #red
+:Mme. Lee JH: as lee
+:M. Devine\nMETOUMBI: as devine
+
+title \nDiagram of Telegram bot System\n
+
+rectangle system {
+
+lee <. (Telegram Bot) : reply
+lee -> (Telegram Bot) : Sign\nIn/Out
+(Telegram Bot) <- devine : Sign\nIn/Out
+(Telegram Bot) .> devine : reply
+hong -u-> (Telegram Bot) : "request\n"
+hong <.d. (Telegram Bot) : "\nget logbook"
+(Database) <..> (Telegram Bot)
+
+}
+
+note right of devine
+send "sign in"
+at "Signing book"
+end note
+
+note left of lee
+send "sign in"
+at "Signing book"
+end note
+
+note left of hong
+send "\logbook"
+at "gatekeeper"
+end note
+
+@enduml

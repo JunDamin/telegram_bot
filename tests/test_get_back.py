@@ -31,7 +31,6 @@ sleep_time = 0.5
 @pytest.mark.asyncio
 async def test_get_back_check(client: TelegramClient):
     # Getting information about yourself
-    _ = await client.connect()
 
     me = await client.get_me()
 
@@ -59,15 +58,11 @@ async def test_get_back_check(client: TelegramClient):
         log_id = m.group(1)
         await erase_log(bot_id, str(log_id), client)
 
-    await client.disconnect()
-    await client.disconnected
-
 
 @pytest.mark.asyncio
 async def test_get_back_first(client: TelegramClient):
     sleep(sleep_time)
     # Getting information about yourself
-    _ = await client.connect()
 
     # ...Get back Test
     await get_reply_of_message_of_id(chat_room_id, "back to work", client)
@@ -90,17 +85,11 @@ async def test_get_back_first(client: TelegramClient):
 
         await check_assert_with_qna(qna, conv)
 
-    await client.disconnect()
-    await client.disconnected
-
 
 @pytest.mark.asyncio
 async def test_get_back_rewrite(client: TelegramClient):
 
     sleep(sleep_time)
-    # Getting information about yourself
-    _ = await client.connect()
-
     # ...Get back Test
     reply = await get_reply_of_message_of_id(chat_room_id, "back to work", client)
 
@@ -114,7 +103,10 @@ async def test_get_back_rewrite(client: TelegramClient):
     async with client.conversation(bot_id) as conv:
 
         qna = [
-            ("Delete and Get Back to Work Again", "Do you really want to do remove log No."),
+            (
+                "Delete and Get Back to Work Again",
+                "Do you really want to do remove log No.",
+            ),
             ("REMOVE GET BACK LOG", "has been Deleted"),
         ]
 
@@ -134,15 +126,12 @@ async def test_get_back_rewrite(client: TelegramClient):
 
     # earase log after use
     await erase_log(bot_id, str(log_id), client)
-    await client.disconnect()
-    await client.disconnected
 
 
 @pytest.mark.asyncio
 async def test_get_back_edit(client: TelegramClient):
     sleep(sleep_time)
     # Getting information about yourself
-    _ = await client.connect()
 
     # ...Get back Test
     reply = await get_reply_of_message_of_id(chat_room_id, "back to work", client)
@@ -167,12 +156,12 @@ async def test_get_back_edit(client: TelegramClient):
         # earase log after use
         await erase_log(bot_id, str(log_id), client)
 
-    await client.disconnect()
-    await client.disconnected
-
 
 if __name__ == "__main__":
     client = TelegramClient(StringSession(session_str), api_id, api_hash)
+    client.connect()
     client.loop.run_until_complete(test_get_back_check(client))
     client.loop.run_until_complete(test_get_back_first(client))
     client.loop.run_until_complete(test_get_back_rewrite(client))
+    client.disconnect()
+    client.disconnecte

@@ -18,4 +18,10 @@ session_str = os.environ["SESSION"]
 
 @pytest.fixture
 async def client() -> TelegramClient:
-    yield TelegramClient(StringSession(session_str), api_id, api_hash)
+    client = TelegramClient(StringSession(session_str), api_id, api_hash)
+    await client.connect()
+    
+    yield client
+    
+    await client.disconnect()
+    await client.disconnected

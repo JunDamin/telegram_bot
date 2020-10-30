@@ -1,5 +1,4 @@
 @startuml
-
 title sign in flow
 
 (*) --> receive "sign in"

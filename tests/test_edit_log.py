@@ -30,7 +30,6 @@ sleep_time = 0.5
 @pytest.mark.asyncio
 async def test_edit_check(client: TelegramClient):
     # Getting information about yourself
-    _ = await client.connect()
 
     me = await client.get_me()
 
@@ -52,15 +51,11 @@ async def test_edit_check(client: TelegramClient):
     # ... get back Test
     await get_reply_of_message_of_id(bot_id, "SKIP", client)
 
-    await client.disconnect()
-    await client.disconnected
-
 
 @pytest.mark.asyncio
 async def test_edit(client: TelegramClient):
     sleep(sleep_time)
     # Getting information about yourself
-    _ = await client.connect()
 
     # ...Edit Test
     reply = await get_reply_of_message_of_id(bot_id, "/edit", client)
@@ -81,11 +76,11 @@ async def test_edit(client: TelegramClient):
 
         await check_assert_with_qna(qna, conv)
 
-    await client.disconnect()
-    await client.disconnected
-
 
 if __name__ == "__main__":
     client = TelegramClient(StringSession(session_str), api_id, api_hash)
+    client.connect()
     client.loop.run_until_complete(test_edit_check(client))
     client.loop.run_until_complete(test_edit(client))
+    client.disconnect()
+    client.disconnecte
