@@ -20,7 +20,7 @@ def make_record_text(row):
     text_message = f"""
     {category} {"- " + sub_category if sub_category else ""}
     Log No.{log_id} : {convert_datetime_to_text(dt)}
-    location : {"location reported" if longitude != "Not Available" else "NOT reported"}
+    location : {"Reported" if longitude != "Not Available" else "NOT reported"}
     remarks : {remarks if remarks else "-"}\n"""
 
     return text_message

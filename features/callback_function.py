@@ -1,5 +1,5 @@
 from telegram import ReplyKeyboardRemove
-from telegram.ext import ConversationHandler, CommandHandler
+from telegram.ext import ConversationHandler, CommandHandler, MessageHandler, Filters
 from features.db_management import (
     create_connection,
     write_csv,
@@ -48,7 +48,7 @@ def help_command(update, context):
 
 
 @log_info()
-def send_file(update, context):
+def get_logbook(update, context):
     """ Send a file when comamnd /signbook is issued"""
     conn = create_connection()
     record = select_record(conn, "logbook", ["*"], {})
@@ -154,7 +154,7 @@ def get_work_content_file(update, context):
 command_handlers = (
     CommandHandler("check", private_only(check_log)),
     CommandHandler("today", get_logs_today),
-    CommandHandler("logbook", private_only(send_file)),
+    MessageHandler(Filters.regex("^/로그북$"), private_only(get_logbook)),
     CommandHandler("work_content", private_only(get_work_content_file)),
     CommandHandler("start", start),
     CommandHandler("help", help_command),

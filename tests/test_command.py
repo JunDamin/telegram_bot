@@ -44,7 +44,7 @@ async def test_today(client: TelegramClient):
 async def test_logbook(client: TelegramClient):
     # Getting information about yourself
 
-    reply = await get_reply_of_message_of_id(bot_id, "/logbook", client)
+    reply = await get_reply_of_message_of_id(bot_id, "/로그북", client)
     assert reply == ""
 
 

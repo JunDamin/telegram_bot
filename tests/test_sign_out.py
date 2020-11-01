@@ -154,14 +154,14 @@ async def test_sign_out_edit(client: TelegramClient):
             ),
             ("It is a test", "Content of Work"),
             ("YES", "I see"),
-            ("/logbook", ""),
+            ("/로그북", ""),
             ("/work_content", ""),
             ("Not Available", "You have signed out as below"),
             ("Edit", "Would you like to share your today's content of work"),
             ("I worked at Office", "I see"),
             ("Not Available", "You have signed out as below"),
             ("Confirm", "Confirmed"),
-            ("/logbook", ""),
+            ("/로그북", ""),
             ("/work_content", ""),
         ]
 
