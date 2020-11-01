@@ -122,3 +122,11 @@ def send_initiating_message_by_branch(update, context, is_exist, data_dict: dict
             data["keyboard"],
         )
         return data["return"]
+
+
+def set_location_not_available(update, context):
+    if update.message.text == "Not Available":
+        update.message.location = lambda x: None
+        setattr(update.message.location, "longitude", "Not Available")
+        setattr(update.message.location, "latitude", "Not Available")
+        print("Not Available")

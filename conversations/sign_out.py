@@ -19,6 +19,7 @@ from features.message import (
     set_location,
     get_log_id_and_record,
     send_initiating_message_by_branch,
+    set_location_not_available
 )
 from features.db_management import (
     create_connection,
@@ -154,11 +155,8 @@ def ask_sign_out_location(update, context):
     2. Desktop app can not send location"""
     keyboard = [
         [
-            KeyboardButton(
-                """Share location infomation for signing out""",
-                request_location=True,
-            ),
-        ]
+            KeyboardButton("Share Location", request_location=True), "Not Available"
+        ],
     ]
 
     reply_markdown(update, context, text_message, keyboard)
@@ -168,11 +166,7 @@ def ask_sign_out_location(update, context):
 
 @log_info()
 def set_sign_out_location(update, context):
-    if update.message.text == "DEROUTE":
-        update.message.location = lambda x: None
-        setattr(update.message.location, "longitude", 1)
-        setattr(update.message.location, "latitude", 1)
-        print("DEROUTED")
+    set_location_not_available(update, context)
     user_data = context.user_data
     HEADER_MESSAGE = "You have signed out as below. Do you want to confirm?"
     if set_location(update, context):

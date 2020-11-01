@@ -16,6 +16,7 @@ from features.message import (
     set_location,
     get_log_id_and_record,
     send_initiating_message_by_branch,
+    set_location_not_available
 )
 
 from features.db_management import (
@@ -149,7 +150,7 @@ def set_sub_category_and_ask_location(update, context):
     2. Desktop app can not send location"""
         keyboard = [
             [
-                KeyboardButton("Share Location", request_location=True),
+                KeyboardButton("Share Location", request_location=True), "Not Available"
             ],
         ]
         reply_markdown(update, context, text_message, keyboard)
@@ -160,11 +161,7 @@ def set_sub_category_and_ask_location(update, context):
 
 @log_info()
 def set_sign_in_location_and_ask_confirmation(update, context):
-    if update.message.text == "DEROUTE":
-        update.message.location = lambda x: None
-        setattr(update.message.location, "longitude", 1)
-        setattr(update.message.location, "latitude", 1)
-        print("DEROUTED")
+    set_location_not_available(update, context)
     user_data = context.user_data
 
     HEADER_MESSAGE = "You have signed in as below. Do you want to confirm?"

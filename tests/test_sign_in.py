@@ -78,7 +78,7 @@ async def test_sign_in_first(client: TelegramClient):
 
         qna = [
             ("Office", "I see"),
-            ("DEROUTE", "You have signed in as below. Do you want to confirm"),
+            ("Not Available", "You have signed in as below. Do you want to confirm"),
             ("Confirm", "Confirmed"),
         ]
 
@@ -114,7 +114,7 @@ async def test_sign_in_rewrite(client: TelegramClient):
 
         qna = [
             ("Office", "I see"),
-            ("DEROUTE", "You have signed in as below. Do you want to confirm"),
+            ("Not Available", "You have signed in as below. Do you want to confirm"),
             ("Confirm", "Confirmed"),
         ]
 
@@ -140,10 +140,10 @@ async def test_sign_in_edit(client: TelegramClient):
 
         qna = [
             ("Office", "I see"),
-            ("DEROUTE", "You have signed in as below. Do you want to confirm"),
+            ("Not Available", "You have signed in as below. Do you want to confirm"),
             ("Edit", "Would you like to share where you work"),
             ("Office", "I see"),
-            ("DEROUTE", "You have signed in as below. Do you want to confirm"),
+            ("Not Available", "You have signed in as below. Do you want to confirm"),
             ("Confirm", "Confirmed"),
         ]
 

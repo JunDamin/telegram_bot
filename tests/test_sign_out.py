@@ -81,7 +81,7 @@ async def test_sign_out_first(client: TelegramClient):
 
         qna = [
             ("I worked at Office", "I see"),
-            ("DEROUTE", "You have signed out as below"),
+            ("Not Available", "You have signed out as below"),
             ("Confirm", "Confirmed"),
         ]
 
@@ -123,7 +123,7 @@ async def test_sign_out_rewrite(client: TelegramClient):
             ),
             ("It is a test", "Content of Work"),
             ("YES", "I see"),
-            ("DEROUTE", "You have signed out as below"),
+            ("Not Available", "You have signed out as below"),
             ("Confirm", "Confirmed"),
         ]
 
@@ -156,10 +156,10 @@ async def test_sign_out_edit(client: TelegramClient):
             ("YES", "I see"),
             ("/logbook", ""),
             ("/work_content", ""),
-            ("DEROUTE", "You have signed out as below"),
+            ("Not Available", "You have signed out as below"),
             ("Edit", "Would you like to share your today's content of work"),
             ("I worked at Office", "I see"),
-            ("DEROUTE", "You have signed out as below"),
+            ("Not Available", "You have signed out as below"),
             ("Confirm", "Confirmed"),
             ("/logbook", ""),
             ("/work_content", ""),

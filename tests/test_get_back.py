@@ -79,7 +79,7 @@ async def test_get_back_first(client: TelegramClient):
 
         qna = [
             ("Without any member of KOICA", "I see"),
-            ("DEROUTE", "You have gotten back as below"),
+            ("Not Available", "You have gotten back as below"),
             ("Confirm", "Confirmed"),
         ]
 
@@ -118,7 +118,7 @@ async def test_get_back_rewrite(client: TelegramClient):
 
         qna = [
             ("With KOICA Colleagues", "I see"),
-            ("DEROUTE", "You have gotten back as below"),
+            ("Not Available", "You have gotten back as below"),
             ("Confirm", "Confirmed"),
         ]
 
@@ -144,10 +144,10 @@ async def test_get_back_edit(client: TelegramClient):
 
         qna = [
             ("With KOICA Colleagues", "I see"),
-            ("DEROUTE", "You have gotten back as below"),
+            ("Not Available", "You have gotten back as below"),
             ("Edit", "Did you have lunch with KOICA Colleauge"),
             ("With KOICA Colleagues", "I see"),
-            ("DEROUTE", "You have gotten back as below"),
+            ("Not Available", "You have gotten back as below"),
             ("Confirm", "Confirmed"),
         ]
 
