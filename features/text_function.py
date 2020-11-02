@@ -19,7 +19,8 @@ def make_record_text(row):
     dt = datetime.fromisoformat(_datetime)
     text_message = f"""
     {category} {"- " + sub_category if sub_category else ""}
-    Log No.{log_id} : {convert_datetime_to_text(dt)}    location : {"Reported" if longitude != "Not Available" and longitude != None else "NOT reported"}
+    Log No.{log_id} : {convert_datetime_to_text(dt)}
+    location : {"Reported" if longitude != "Not Available" and longitude != None else "NOT reported"}
     remarks : {remarks if remarks else "-"}\n"""
 
     return text_message
