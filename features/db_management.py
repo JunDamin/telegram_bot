@@ -2,7 +2,6 @@ import csv
 from collections import deque
 import sqlite3
 from sqlite3 import Error
-from typing import Optional
 
 
 def start_database():
@@ -112,15 +111,23 @@ def make_sql_select_record(
 
 
 def make_sql_update_record(
-    table_name: str, record: dict, pk: str, pk_name: Optional[str] = "id"
+    table_name: str, record: dict, equal_condition: dict, extra_condition: str
 ) -> str:
     """
     docstring
     """
     keys = record.keys()
+    if equal_condition:
+        condition_list = [
+            " {} = '{}' ".format(key, equal_condition.get(key))
+            for key in equal_condition.keys()
+        ]
+        condition = "AND ".join(condition_list)
+    else:
+        condition = ""
 
     sql = f"""UPDATE {table_name} SET {', '.join(["{} = '{}'".format(key, record[key]) for key in keys])}
-    WHERE {pk_name} = {pk};"""
+    {'WHERE' if condition or extra_condition else ""} {condition} {extra_condition};"""
 
     return sql
 
@@ -169,7 +176,21 @@ def select_record(
 
 def update_record(conn, table_name: str, record: dict, pk):
 
-    sql = make_sql_update_record(table_name, record, pk)
+    equal_condition = {"id": pk}
+    sql = make_sql_update_record(table_name, record, equal_condition, "")
+    print(sql)
+
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    conn.commit()
+    return cursor.lastrowid
+
+
+def update_records(
+    conn, table_name: str, record: dict, equal_condition: dict, extra_condition: dict
+):
+
+    sql = make_sql_update_record(table_name, record, equal_condition, extra_condition)
     print(sql)
 
     cursor = conn.cursor()

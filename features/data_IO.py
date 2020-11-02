@@ -114,14 +114,33 @@ def get_record_by_log_id(log_id):
     conn = create_connection("db.sqlite3")
     (row,) = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
     conn.close()
-    
+
     return row
+
+
+def get_record_by_log_ids(log_ids):
+
+    conn = create_connection("db.sqlite3")
+    rows = select_record(conn, "logbook", LOG_COLUMN, {}, f"id IN ({log_ids})")
+    conn.close()
+
+    return rows
 
 
 def get_text_of_log_by_id(log_id):
 
     conn = create_connection()
     rows = select_record(conn, "logbook", LOG_COLUMN, {"id": log_id})
+    conn.close()
+    text_message = make_text_from_logs(rows)
+
+    return text_message
+
+
+def get_text_of_log_by_ids(log_ids):
+
+    conn = create_connection()
+    rows = select_record(conn, "logbook", LOG_COLUMN, {}, f"id IN ({log_ids})")
     conn.close()
     text_message = make_text_from_logs(rows)
 
@@ -185,6 +204,15 @@ def put_work_content(update, context, work_content, work_content_id):
     logbook_record = {"work_content_id": content_id}
     update_record(conn, "logbook", logbook_record, context.user_data.get("log_id"))
     conn.close()
+
+
+def post_remarks_by_log_ids(log_ids):
+
+    conn = create_connection("db.sqlite3")
+    (row,) = update_record(conn, "logbook", {"remarks": ""}, f"id IN ({log_ids})")
+    conn.close()
+
+    return row
 
 
 def delete_log_and_content(update, context):

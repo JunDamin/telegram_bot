@@ -244,7 +244,7 @@ edit_log_conv = ConversationHandler(
     states={
         edit_log.ANSWER_LOG_ID: [
             MessageHandler(
-                Filters.regex("[0-9]*") & Filters.private,
+                Filters.regex("[0-9,\s]*") & Filters.private,
                 edit_log.ask_confirmation_of_edit,
             ),
         ],
