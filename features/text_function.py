@@ -17,7 +17,7 @@ def make_record_text(row):
         work_content_id,
     ) = row
     dt = datetime.fromisoformat(_datetime)
-    location_text = "Reported" if longitude != None else "NOT reported"
+    location_text = "Reported" if longitude is not None else "NOT reported"
     location_text = location_text if longitude != "Not Available" else "Not Available"
     text_message = f"""
     {category} {"- " + sub_category if sub_category else ""}
