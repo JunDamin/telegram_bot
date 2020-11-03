@@ -1,16 +1,13 @@
 from telegram import ReplyKeyboardRemove
 from telegram.ext import ConversationHandler, CommandHandler, MessageHandler, Filters
-from features.db_management import (
-    create_connection,
-    write_csv,
-    select_record
-)
+from features.db_management import create_connection, write_csv, select_record
 from features.log import log_info
 from features.data_IO import (
     get_logs_of_today,
     make_text_from_logs,
     get_logs_of_the_day,
-    get_text_of_log_by_id,)
+    get_text_of_log_by_id,
+)
 from features.authority import private_only
 from features.message import reply_markdown
 from features.constant import LOG_COLUMN
@@ -22,8 +19,7 @@ from features.constant import LOG_COLUMN
 @log_info()
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_markdown_v2(
-        """*bold \*text*
+    text = """*bold \*text*
 _italic \*text_
 __underline__
 ~strikethrough~
@@ -37,7 +33,8 @@ pre-formatted fixed-width code block
 ```python
 pre-formatted fixed-width code block written in the Python programming language
 ```"""
-    )
+    text = text * 40
+    reply_markdown(update, context, text)
     context.user_data["status"] = "START"
 
 
@@ -84,7 +81,13 @@ def check_log(update, context):
     user = update.message.from_user
 
     conn = create_connection()
-    rows = select_record(conn, "logbook", LOG_COLUMN, {"chat_id": user.id}, "ORDER BY timestamp DESC LIMIT 6")
+    rows = select_record(
+        conn,
+        "logbook",
+        LOG_COLUMN,
+        {"chat_id": user.id},
+        "ORDER BY timestamp DESC LIMIT 6",
+    )
     rows = rows[-1::-1]
     conn.close()
 
